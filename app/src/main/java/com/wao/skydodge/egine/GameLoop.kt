@@ -251,7 +251,8 @@ class GameLoop(
         if (!gameouver) {
             fundo.update()
             carro.colisao = colisao
-            carro.velocidadedoGiro = fundo.mountainsSpeed
+
+
             carro.update(fundo)
         }
 
@@ -693,7 +694,11 @@ class GameLoop(
                 MotionEvent.ACTION_DOWN -> {
                     // Inicia a ação quando o toque começa
                     isTouching = true
-                  //  player.applyLift()  // Faz o avião subir quando pressionado
+                  carro.applyLift()  // Faz o avião subir quando pressionado
+                    fundo.reduzindo = false
+                    //carro.reduzindo = false
+
+                    fundo.mountainsSpeed+=1f
                     return true
                 }
 
@@ -701,6 +706,12 @@ class GameLoop(
                     // Mantém a ação enquanto o dedo estiver se movendo na tela
                     if (isTouching) {
                        // player.applyLift()  // Continua fazendo o avião subir
+                        carro.applyLift()
+                        fundo.reduzindo = false
+                        carro.rodaF.reduzindo = false
+                        carro.rodaT.reduzindo = false
+                       //  carro.reduzindo = false
+                        fundo.mountainsSpeed+=1f
                     }
                     return true
                 }
@@ -709,11 +720,14 @@ class GameLoop(
                     if (gameouver) {
                         gameouver = false
                         fundo.distancia = 0
-                        fundo.mountainsSpeed = 15f
+
                         fundo.mountainsX = 0f
 
                         fundo.mountainsX2 = fundo.backgroundMountains2.width.toFloat() //+ 1800
                     }
+
+                    fundo.reduzindo = true
+                    carro.reduzindo = true
                     isTouching = false
                     return true
                 }

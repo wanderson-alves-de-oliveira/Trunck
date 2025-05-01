@@ -19,11 +19,11 @@ import kotlin.math.sin
 
 class Carro(context: Context) {
     var colisao = Colisao()
-    private var rodaF = Roda(context)
-    private var rodaT = Roda(context)
+      var rodaF = Roda(context)
+      var rodaT = Roda(context)
     var velocidadedoGiro = 0f
     var screenHeight = 0
-
+    var reduzindo = false
 //     private val wheelDistance = 120f // distância entre rodas
 //
 //
@@ -86,10 +86,16 @@ class Carro(context: Context) {
        // calculoR()
         rodaF.update()
         rodaT.update()
+        if(reduzindo){
 
+            rodaF.reduzindo = true
+            rodaT.reduzindo = true
+            if(rodaT .velocidadedoGiro<=0){
 
-//        val deltaX = rodaF.x - rodaT.x
-//        val deltaY = rodaT.y - rodaF.y
+                reduzindo = false
+            }
+
+        }
         rotacao = calcularRotacaoEntreRodas(rodaT.y,rodaF.y,rodaT.x,rodaF.x)
 
         verirficarColisao(fundo, rodaF)
@@ -144,6 +150,7 @@ class Carro(context: Context) {
             colidiu(roda)
         } else {
             roda.gravity = 2.0f
+
         }
 
     }
@@ -151,7 +158,7 @@ class Carro(context: Context) {
     private fun colidiu(roda: Roda) {
 
         val terrainY = colisao.ultimoY
-        if (roda.y + roda.altura > terrainY) {
+        if (roda.y + roda.altura > terrainY ) {
             roda.y = terrainY - (roda.altura*0.8f)
             roda.gravity = 0f
 
@@ -226,6 +233,14 @@ class Carro(context: Context) {
 
 
         canvas.restore()
+
+
+    }
+
+    fun applyLift() {
+
+    rodaF.velocidadedoGiro += 1
+    rodaT.velocidadedoGiro += 1
 
 
     }

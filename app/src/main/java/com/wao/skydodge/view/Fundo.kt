@@ -22,7 +22,8 @@ class Fundo (val context: Context){
     var mountainsY = 0f
     val skySpeed = 1f
     val cloudsSpeed = 3f
-    var mountainsSpeed = 15f
+    var mountainsSpeed = 0f
+    var reduzindo = false
     var distancia = 0
     lateinit var backgroundSky: Bitmap
     lateinit var backgroundClouds: Bitmap
@@ -37,6 +38,21 @@ class Fundo (val context: Context){
 
         skyX -= skySpeed
         cloudsX -= cloudsSpeed
+
+
+        if(reduzindo){
+            mountainsSpeed-= mountainsSpeed*0.1f
+            if(mountainsSpeed<=0){
+                mountainsSpeed=0f
+                reduzindo = false
+            }
+        }else if(mountainsSpeed>90){
+                mountainsSpeed=90f
+
+            }
+
+
+
         mountainsX -= mountainsSpeed
         mountainsX2 -= mountainsSpeed
         distancia+=mountainsSpeed.toInt()
@@ -56,7 +72,6 @@ class Fundo (val context: Context){
             backgroundMountains2 = gerarBitmapOnduladoComTextura(context,(backgroundMountains2.width).toInt(),backgroundMountains.height,texturaBitmap)
             mountainsX2 = mountainsX+backgroundMountains2.width.toFloat()
 
-         mountainsSpeed+=1f
         }
 
 

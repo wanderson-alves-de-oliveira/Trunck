@@ -9,7 +9,7 @@ import android.graphics.Paint
  import com.wao.skydodge.R
 
 class Roda(context: Context) {
-
+    var reduzindo = false
     var x =500f
     var y = 250f
     val largura = 150
@@ -59,10 +59,22 @@ class Roda(context: Context) {
 
         // Atualiza a posição vertical com base na velocidade
         y += velocityY
+
+        if(reduzindo){
+            velocidadedoGiro-=  0.5f
+            if(velocidadedoGiro<=0){
+                velocidadedoGiro=0f
+                reduzindo = false
+            }
+        }
+
+        if(velocidadedoGiro>30){
+            velocidadedoGiro = 30f
+        }
         if(giro<360) {
-            giro += 10f
+            giro += velocidadedoGiro
         }else{
-            giro = 10f
+            giro = velocidadedoGiro
         }
         // Impede que o avião caia para fora da tela (evitar que saia da tela para baixo)
         if (y > screenHeight - bitmap.height && screenHeight>0) {
