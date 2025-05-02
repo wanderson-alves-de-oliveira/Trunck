@@ -23,6 +23,7 @@ import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.GameView
 import com.wao.skydodge.view.MahjongTile
 import com.wao.skydodge.view.MainView
+import com.wao.skydodge.view.Selecao
 import com.wao.skydodge.view.Venceu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,6 @@ class GameLoop(
 
     private val optimalTime = 1_000_000_000 / targetFps
     private var isTouched = false
-    private var dica = false
 
 
     private var avaliar3 = false
@@ -65,6 +65,7 @@ class GameLoop(
     var pontos = 0
     private var pontosCont = 0
 
+    private val selecao = Selecao(context,w,h)
 
     private var venceu = false
     private var falhou = false
@@ -243,9 +244,9 @@ class GameLoop(
 
         //  this.canvas = null
 
-        if (lojaWAO.abrirLoja == false) {
-            gameState = gameStateAUX
-        }
+//        if (lojaWAO.abrirLoja == false) {
+//            gameState = gameStateAUX
+//        }
 
 
         if (!gameouver) {
@@ -385,6 +386,7 @@ class GameLoop(
                 GameState.PLAYING -> drawGame(canvas)
                 GameState.GAME_OVER -> drawGameOver(canvas)
                 GameState.SHOP -> drawShop(canvas)
+                GameState.SELECAO -> drawSelecao(canvas)
             }
 
 
@@ -419,6 +421,9 @@ class GameLoop(
 
     private fun drawGameOver(canvas: Canvas?) {
         TODO("Not yet implemented")
+    }
+    private fun drawSelecao(canvas: Canvas?) {
+        selecao.draw(canvas!! )
     }
 
     private fun drawShop(canvas: Canvas?) {
@@ -531,12 +536,6 @@ class GameLoop(
 
         canvas = surfaceHolder.lockCanvas()
 
-
-//        if (canvas != null) {
-//            canvas.drawRGB(0, 0, 0) // Limpa a tela
-//
-//
-//        }
     }
 
     private fun handleInput() {
@@ -779,7 +778,12 @@ class GameLoop(
                         event.y
                     )
                 ) {
-                    btm.animar = true
+
+                    gameStateAUX = gameState
+                  //  gameState = GameState.SELECAO
+
+                     gameState = GameState.PLAYING
+
                 }
             }
 
@@ -790,7 +794,12 @@ class GameLoop(
             GameState.SHOP -> {
 
                 lojaWAO.onTouchEvent(event)
-            }
+            }   GameState.SELECAO -> {
+
+            selecao.onTouchEvent(event)
+
+
+        }
 
             else -> {}
         }
@@ -817,5 +826,5 @@ class GameLoop(
 }
 
 enum class GameState {
-    MENU, PLAYING, GAME_OVER, SHOP
+    MENU, PLAYING, GAME_OVER, SHOP,SELECAO
 }

@@ -1,5 +1,6 @@
 package com.wao.skydodge.egine
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,7 +9,8 @@ import android.graphics.Color
 import android.graphics.Paint
  import android.graphics.PointF
 import android.graphics.Rect
- import com.wao.skydodge.R
+import android.util.DisplayMetrics
+import com.wao.skydodge.R
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.ferramentas.ModoDeslise
 import com.wao.skydodge.view.Fundo
@@ -29,9 +31,11 @@ class Carro(context: Context) {
     var rotacao = 0f
     var largura = 0f
     var altura = 150f
-    private var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassik)
+    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassib)
 
-
+    private val display: DisplayMetrics = context.resources.displayMetrics
+    private val h = display.heightPixels
+    private val w = display.widthPixels
 
     init {
         rodaF.x = 500f
@@ -93,6 +97,7 @@ class Carro(context: Context) {
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     fun calcularRotacaoEntreRodas(yTraseira: Float, yDianteira: Float, xTraseira: Float, xDianteira: Float): Float {
         val deltaX = xDianteira - xTraseira
         val deltaY = yTraseira - yDianteira // importante: eixo Y é invertido
@@ -162,16 +167,6 @@ class Carro(context: Context) {
 
     fun draw(canvas: Canvas) {
 
-        val paintRoda = Paint().apply { color = Color.BLACK }
-        val paintChassi = Paint().apply {
-            color = Color.rgb(139, 69, 19) // marrom
-            style = Paint.Style.FILL
-        }
-        val paintContorno = Paint().apply {
-            color = Color.BLACK
-            style = Paint.Style.STROKE
-            strokeWidth = 4f
-        }
 
         val paintAmortecedor = Paint().apply {
             color = Color.DKGRAY
@@ -186,13 +181,13 @@ class Carro(context: Context) {
         // Chassi
         val centerX = (rodaT.x + rodaF.x) / 2
         val centerY = (rodaT.y + rodaF.y) / 2
-       val pontoChassiFrente = pontoNoChassi(rodaF.x*0.95f, centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-       val  pontoChassiTras = pontoNoChassi(rodaT.x*1.5f, centerY-(altura/1.8f), -60f, 30f, rotacao*-1.8f)
+       val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+       val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.8f), -60f, 30f, rotacao*-1.8f)
 
         canvas.save()
         canvas.rotate(rotacao*-1, centerX, centerY)
 
-
+     //   paintAmortecedor.color = Color.RED
         canvas.drawLine(
             pontoChassiTras.x,
             pontoChassiTras.y,
@@ -200,7 +195,7 @@ class Carro(context: Context) {
             rodaT.y+(rodaT.largura*0.5f),
             paintAmortecedor
         )
-
+       // paintAmortecedor.color = Color.BLUE
 // Desenha amortecedor dianteiro
         canvas.drawLine(
             pontoChassiFrente.x,
