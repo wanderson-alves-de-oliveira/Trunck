@@ -250,6 +250,8 @@ class GameLoop(
 
         if (!gameouver) {
             fundo.update()
+
+
             carro.colisao = colisao
 
 
@@ -695,6 +697,7 @@ class GameLoop(
                     // Inicia a ação quando o toque começa
                     isTouching = true
                   carro.applyLift()  // Faz o avião subir quando pressionado
+                    carro.parou = false
                     fundo.reduzindo = false
                     //carro.reduzindo = false
 
@@ -710,6 +713,7 @@ class GameLoop(
                         fundo.reduzindo = false
                         carro.rodaF.reduzindo = false
                         carro.rodaT.reduzindo = false
+                        carro.parou = false
                        //  carro.reduzindo = false
                         fundo.mountainsSpeed+=1f
                     }

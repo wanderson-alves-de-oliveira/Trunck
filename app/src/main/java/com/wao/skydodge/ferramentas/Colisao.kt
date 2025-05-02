@@ -7,7 +7,7 @@ import android.graphics.Rect
 class Colisao() {
 
     var ultimoY = 0f
-    var modo = GameState.P
+    var modo = ModoDeslise.P
     fun colideComMapa(rect: Rect, mapa: Bitmap ,offsetX: Int,offsetY: Int): Boolean {
         for (y in rect.top until rect.bottom) {
             for (x in rect.left until rect.right) {
@@ -31,15 +31,15 @@ class Colisao() {
     }
 
 
-    fun detectarDirecaoDoTerreno(bitmapColisao: Bitmap, x: Int, y: Int): GameState {
+    fun detectarDirecaoDoTerreno(bitmapColisao: Bitmap, x: Int, y: Int): ModoDeslise {
         // Verifica a altura do solo no ponto x
         val alturaAtual = encontrarAlturaDoChao(bitmapColisao, x, y)
         val alturaFrente = encontrarAlturaDoChao(bitmapColisao, x + 1, y)
 
         return when {
-            alturaFrente < alturaAtual ->  GameState.S
-            alturaFrente > alturaAtual ->   GameState.D
-            else ->  GameState.P
+            alturaFrente < alturaAtual ->  ModoDeslise.S
+            alturaFrente > alturaAtual ->   ModoDeslise.D
+            else ->  ModoDeslise.P
         }
     }
 
@@ -54,6 +54,3 @@ class Colisao() {
 
 }
 
-enum class GameState {
-    S, D, P
-}

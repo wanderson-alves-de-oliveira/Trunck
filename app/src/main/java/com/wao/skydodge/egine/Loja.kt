@@ -30,7 +30,7 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
     var wal = Bitmap.createScaledBitmap(
         BitmapFactory.decodeResource(
             context.resources,
-            R.drawable.muralha
+            R.drawable.terra
         ), (w), (this.h * 1.2f).toInt(), false
     )
 

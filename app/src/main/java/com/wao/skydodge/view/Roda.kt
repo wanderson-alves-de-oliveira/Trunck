@@ -20,7 +20,7 @@ class Roda(context: Context) {
     var velocityY = 0f  // Velocidade vertical (gravidade)
     var gravity = 2.0f  // Constante de gravidade
     private var lift = -25f     // Levantamento para impulsionar para cima
-    private var bitmapx: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.roda)
+    private var bitmapx: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.rodac)
     var bitmap = Bitmap.createScaledBitmap(
     bitmapx,
     (200).toInt(),
