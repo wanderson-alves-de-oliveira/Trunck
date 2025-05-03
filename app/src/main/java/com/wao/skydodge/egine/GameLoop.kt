@@ -692,52 +692,60 @@ class GameLoop(
     fun onTouchEvent(event: MotionEvent): Boolean {
 
         if (gameState == GameState.PLAYING) {
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // Inicia a ação quando o toque começa
-                    isTouching = true
-                  carro.applyLift()  // Faz o avião subir quando pressionado
-                    carro.parou = false
-                    fundo.reduzindo = false
-                    //carro.reduzindo = false
 
-                    fundo.mountainsSpeed+=1f
-                    return true
-                }
+            if (event.action == MotionEvent.ACTION_DOWN && event.x>w*0.8f) {
+                selecao.sair = false
+                gameState = GameState.SELECAO
+            }else{
 
-                MotionEvent.ACTION_MOVE -> {
-                    // Mantém a ação enquanto o dedo estiver se movendo na tela
-                    if (isTouching) {
-                       // player.applyLift()  // Continua fazendo o avião subir
-                        carro.applyLift()
-                        fundo.reduzindo = false
-                        carro.rodaF.reduzindo = false
-                        carro.rodaT.reduzindo = false
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        // Inicia a ação quando o toque começa
+                        isTouching = true
+                        carro.applyLift()  // Faz o avião subir quando pressionado
                         carro.parou = false
-                       //  carro.reduzindo = false
+                        fundo.reduzindo = false
+                        //carro.reduzindo = false
+
                         fundo.mountainsSpeed+=1f
-                    }
-                    return true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    if (gameouver) {
-                        gameouver = false
-                        fundo.distancia = 0
-
-                        fundo.mountainsX = 0f
-
-                        fundo.mountainsX2 = fundo.backgroundMountains2.width.toFloat() //+ 1800
+                        return true
                     }
 
-                    fundo.reduzindo = true
-                    carro.reduzindo = true
-                    isTouching = false
-                    return true
-                }
+                    MotionEvent.ACTION_MOVE -> {
+                        // Mantém a ação enquanto o dedo estiver se movendo na tela
+                        if (isTouching) {
+                            // player.applyLift()  // Continua fazendo o avião subir
+                            carro.applyLift()
+                            fundo.reduzindo = false
+                            carro.rodaF.reduzindo = false
+                            carro.rodaT.reduzindo = false
+                            carro.parou = false
+                            //  carro.reduzindo = false
+                            fundo.mountainsSpeed+=1f
+                        }
+                        return true
+                    }
 
-                else -> return false
+                    MotionEvent.ACTION_UP -> {
+                        if (gameouver) {
+                            gameouver = false
+                            fundo.distancia = 0
+
+                            fundo.mountainsX = 0f
+
+                            fundo.mountainsX2 = fundo.backgroundMountains2.width.toFloat() //+ 1800
+                        }
+
+                        fundo.reduzindo = true
+                        carro.reduzindo = true
+                        isTouching = false
+                        return true
+                    }
+
+                    else -> return false
+                }
             }
+
 
 
         } else {
