@@ -10,6 +10,7 @@ import android.graphics.Paint
  import android.graphics.PointF
 import android.graphics.Rect
 import android.util.DisplayMetrics
+import androidx.compose.ui.geometry.Offset
 import com.wao.skydodge.R
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.ferramentas.ModoDeslise
@@ -27,11 +28,11 @@ class Carro(context: Context) {
      var screenHeight = 0
     var reduzindo = false
     var parou = false
-
+ var estacionado = false
     var rotacao = 0f
     var largura = 0f
     var altura = 150f
-    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassib)
+    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia)
 
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
@@ -61,10 +62,8 @@ class Carro(context: Context) {
         rodaF.screenHeight
         rodaT.screenHeight
     }
+    fun update(fundo: Bitmap,offset : Offset) {
 
-    fun update(fundo: Fundo) {
-
-       // calculoR()
         rodaF.update()
         rodaT.update()
         if(reduzindo){
@@ -78,7 +77,28 @@ class Carro(context: Context) {
 
         }
 
-        if((fundo.mountainsSpeed<1 && rotacao > 0) ){
+            rotacao = calcularRotacaoEntreRodas(rodaT.y, rodaF.y, rodaT.x, rodaF.x)
+
+        verirficarColisao(fundo,offset, rodaF)
+        verirficarColisao(fundo,offset, rodaT)
+
+    }
+    fun update(fundo: Fundo) {
+
+        rodaF.update()
+        rodaT.update()
+        if(reduzindo){
+
+            rodaF.reduzindo = true
+            rodaT.reduzindo = true
+            if(rodaT .velocidadedoGiro<=0){
+
+                reduzindo = false
+            }
+
+        }
+
+        if((fundo.mountainsSpeed<1 && rotacao > 0) && !estacionado){
             rotacao -=1f
             parou = true
             if(rotacao<0){
@@ -92,9 +112,6 @@ class Carro(context: Context) {
         verirficarColisao(fundo, rodaF)
         verirficarColisao(fundo, rodaT)
 
-        // verirficarDDistanciDeEixo()
-
-
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -103,6 +120,41 @@ class Carro(context: Context) {
         val deltaY = yTraseira - yDianteira // importante: eixo Y é invertido
           return toDegrees(atan2(deltaY.toDouble(), deltaX.toDouble())).toFloat()
     }
+    fun verirficarColisao(fundo: Bitmap,offset: Offset, roda: Roda) {
+
+
+        val novoX = roda.x
+        val novoY = roda.y
+        val rect = Rect(
+            (novoX).toInt(),
+            (novoY).toInt(),
+            (novoX + (roda.largura)).toInt(),
+            (novoY + (roda.altura)).toInt()
+        )
+
+
+
+        if (colisao.colideComMapa(
+                rect,
+                fundo,
+                offset.x.toInt(),
+                offset.y.toInt()
+            )
+
+        ) {
+
+            //  gameouver = true
+
+            colidiu(roda)
+
+        } else {
+            roda.gravity = 2.0f
+
+        }
+
+    }
+
+
     fun verirficarColisao(fundo: Fundo, roda: Roda) {
 
 
@@ -153,7 +205,7 @@ class Carro(context: Context) {
         if (roda.y + roda.altura > terrainY ) {
             roda.y = terrainY - (roda.altura*0.8f)
             roda.gravity = 0f
-
+            roda.velocityY = 0f
         }
 
 
@@ -167,7 +219,9 @@ class Carro(context: Context) {
 
     fun draw(canvas: Canvas) {
 
-
+        if(rodaF.x<rodaT.x){
+            rodaF.x = rodaT.x+200
+        }
         val paintAmortecedor = Paint().apply {
             color = Color.DKGRAY
             strokeWidth = 30f
@@ -211,7 +265,7 @@ class Carro(context: Context) {
         canvas.save()
         canvas.rotate(rotacao*-1.8f, centerX, centerY)
 
-        canvas.drawBitmap(bitmap, rodaT.x*0.95f, centerY-(altura*0.8f), null)
+        canvas.drawBitmap(bitmap, rodaT.x, centerY-(altura*0.8f), null)
 
 
         canvas.restore()

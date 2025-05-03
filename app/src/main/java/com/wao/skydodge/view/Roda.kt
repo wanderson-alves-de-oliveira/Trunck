@@ -12,8 +12,8 @@ class Roda(context: Context) {
     var reduzindo = false
     var x =500f
     var y = 250f
-    val largura = 150
-    val altura = 150
+    var largura = 150
+    var altura = 150
      var giro = 0f
     private var speed = 20f
     var velocidadedoGiro = 0f

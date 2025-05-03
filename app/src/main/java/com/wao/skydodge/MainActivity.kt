@@ -72,31 +72,31 @@ class MainActivity : Activity() {
 
 
         layout.addView(gameView, gameParams) // Adiciona o jogo
-
-        val adView = AdView(this)
-        adView.adUnitId = "ca-app-pub-1070048556704742/1261828358"
-        adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))
-        this.adView = adView
-
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-        val adParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = android.view.Gravity.BOTTOM // Fixa o banner na parte inferior
-        }
-        adParams.bottomMargin = 0  // Alinhar ao rodapé
-
-        layout.addView(this.adView, adParams)
-
-
-
-
-        if (billingManager.foiComprado("remove_ads")) {
-            layout.removeView(adView)
-            gameView.removerAnuncios()
-        }
+//
+//        val adView = AdView(this)
+//        adView.adUnitId = "ca-app-pub-1070048556704742/1261828358"
+//        adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))
+//        this.adView = adView
+//
+//        val adRequest = AdRequest.Builder().build()
+//        adView.loadAd(adRequest)
+//        val adParams = FrameLayout.LayoutParams(
+//            FrameLayout.LayoutParams.MATCH_PARENT,
+//            FrameLayout.LayoutParams.WRAP_CONTENT
+//        ).apply {
+//            gravity = android.view.Gravity.BOTTOM // Fixa o banner na parte inferior
+//        }
+//        adParams.bottomMargin = 0  // Alinhar ao rodapé
+//
+//        layout.addView(this.adView, adParams)
+//
+//
+//
+//
+//        if (billingManager.foiComprado("remove_ads")) {
+//            layout.removeView(adView)
+//            gameView.removerAnuncios()
+//        }
 
 
 

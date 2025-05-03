@@ -257,6 +257,7 @@ class GameLoop(
 
 
             carro.update(fundo)
+            selecao.update()
         }
 
 
@@ -780,9 +781,10 @@ class GameLoop(
                 ) {
 
                     gameStateAUX = gameState
-                  //  gameState = GameState.SELECAO
+                    selecao.sair = false
+                   gameState = GameState.SELECAO
 
-                     gameState = GameState.PLAYING
+                    // gameState = GameState.PLAYING
 
                 }
             }
@@ -796,7 +798,13 @@ class GameLoop(
                 lojaWAO.onTouchEvent(event)
             }   GameState.SELECAO -> {
 
-            selecao.onTouchEvent(event)
+                if(!selecao.sair) {
+                    selecao.onTouchEvent(event)
+                }else{
+                    carro.bitmap=selecao.listaMonters[selecao.index]
+                    gameState = GameState.PLAYING
+
+                }
 
 
         }

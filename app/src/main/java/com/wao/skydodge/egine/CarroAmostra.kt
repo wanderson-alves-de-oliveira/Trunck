@@ -14,15 +14,43 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class CarroAmostra(context: Context)  {
-    var rodaF = Roda(context)
-    var rodaT = Roda(context)
-    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassib)
+    var rodaF : Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.rodaa)
+    var rodaT : Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.rodaa)
+    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia)
     var rotacao = 0f
-    var largura = 0f
-    var altura = 150f
+
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
+    var largura = -550f
+    var altura = 250f
+    val rodaTx = (w / 2).toFloat() + (largura *0.42f)
+    val rodaFx = rodaTx - (largura *0.55f)
+    val rodaFy = (h / 2).toFloat() - (altura / 2)
+    val rodaTy = (h / 2).toFloat() - (altura / 2)
+
+    init {
+        rodaF = Bitmap.createScaledBitmap(
+            rodaF,
+            (200).toInt(),
+            (200).toInt(),
+            false
+        )
+
+        rodaT = Bitmap.createScaledBitmap(
+            rodaT,
+            (200).toInt(),
+            (200).toInt(),
+            false)
+
+        bitmap = Bitmap.createScaledBitmap(
+            bitmap,
+            (largura).toInt(),
+            (altura).toInt(),
+            false
+        )
+
+    }
     fun pontoNoChassi(carroX: Float, carroY: Float, offsetX: Float, offsetY: Float, angulo: Float): PointF {
         val rad = Math.toRadians(angulo.toDouble())
         val x = carroX + offsetX * cos(rad) - offsetY * sin(rad)
@@ -40,10 +68,13 @@ class CarroAmostra(context: Context)  {
         }
 
 
-        val centerX = (rodaT.x + rodaF.x) / 2
-        val centerY = (rodaT.y + rodaF.y) / 2
-        val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-        val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.8f), -60f, 30f, rotacao*-1.8f)
+
+
+
+        val centerX = (w / 2).toFloat() + (largura/2 )
+        val centerY = (h / 2).toFloat() - (altura / 2)
+        val pontoChassiFrente = pontoNoChassi(rodaFx-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+        val  pontoChassiTras = pontoNoChassi(rodaTx+(w*0.08f), centerY-(altura/1.8f), -60f, 30f, rotacao*-1.8f)
 
         canvas.save()
         canvas.rotate(rotacao*-1, centerX, centerY)
@@ -52,8 +83,8 @@ class CarroAmostra(context: Context)  {
         canvas.drawLine(
             pontoChassiTras.x,
             pontoChassiTras.y,
-            rodaT.x+(rodaT.largura*0.5f),
-            rodaT.y+(rodaT.largura*0.5f),
+            rodaTx+(200*0.5f),
+            rodaTy+(200*0.5f),
             paintAmortecedor
         )
         // paintAmortecedor.color = Color.BLUE
@@ -61,19 +92,19 @@ class CarroAmostra(context: Context)  {
         canvas.drawLine(
             pontoChassiFrente.x,
             pontoChassiFrente.y,
-            rodaF.x+(rodaT.largura*0.5f),
-            rodaF.y+(rodaT.largura*0.5f),
+            rodaFx+(200*0.5f),
+            rodaFy+(200*0.5f),
             paintAmortecedor
         )
-        rodaT.draw(canvas)
-        rodaF.draw(canvas)
 
         canvas.restore()
         canvas.save()
         canvas.rotate(rotacao*-1.8f, centerX, centerY)
 
-        canvas.drawBitmap(bitmap, rodaT.x*0.95f, centerY-(altura*0.8f), null)
+        canvas.drawBitmap(rodaT, rodaTx, rodaTy, null)
+        canvas.drawBitmap(rodaF, rodaFx, rodaFy, null)
 
+        canvas.drawBitmap(bitmap, centerX, centerY-(altura*0.8f), null)
 
         canvas.restore()
 
