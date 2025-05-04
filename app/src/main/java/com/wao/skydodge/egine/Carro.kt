@@ -236,7 +236,7 @@ class Carro(context: Context) {
         val centerX = (rodaT.x + rodaF.x) / 2
         val centerY = (rodaT.y + rodaF.y) / 2
        val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-       val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.8f), -60f, 30f, rotacao*-1.8f)
+       val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
 
         canvas.save()
         canvas.rotate(rotacao*-1, centerX, centerY)

@@ -27,10 +27,9 @@
 
 
         <activity
-            android:name="com.wao.skydodge.MainActivity"
+            android:name="com.wao.skydodge.view.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.Majong"
-            android:screenOrientation="landscape"
+             android:screenOrientation="landscape"
             tools:ignore="DiscouragedApi">
 
             <intent-filter>
@@ -39,6 +38,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".MainActivity"
+            android:screenOrientation="landscape">
+    </activity>
+
         <receiver
             android:name="com.wao.skydodge.ferramentas.NotificationReceiver"
             android:exported="false" />

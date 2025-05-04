@@ -257,7 +257,9 @@ class GameLoop(
 
 
             carro.update(fundo)
-            selecao.update()
+            if(gameState==GameState.SELECAO) {
+                selecao.update()
+            }
         }
 
 
@@ -808,8 +810,17 @@ class GameLoop(
 
                 if(!selecao.sair) {
                     selecao.onTouchEvent(event)
+                    if(selecao.sair) {
+                        carro.bitmap = selecao.listaMonters[selecao.index]
+                        carro.rodaF.bitmap = selecao.getRoda()
+                        carro.rodaT.bitmap = selecao.getRoda()
+                        gameState = GameState.PLAYING
+                    }
+
                 }else{
                     carro.bitmap=selecao.listaMonters[selecao.index]
+                    carro.rodaF.bitmap=selecao.getRoda()
+                    carro.rodaT.bitmap=selecao.getRoda()
                     gameState = GameState.PLAYING
 
                 }

@@ -17,37 +17,72 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     var carro = Carro(context)
     var offset: Offset = Offset(0f, 0f)
     var listaMonters: MutableList<Bitmap> = mutableListOf()
+    var listaPneus: MutableList<Bitmap> = mutableListOf()
     var sair = false
     var index = 0
+    var indexP = 0
+    var selectPneu = false
+
 
     var fundo: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.base)
     var oficina: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.fundooficina)
-    var esquerda: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bt)
+    var esquerda: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btl)
+    var direita: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btr)
+    var start: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.start)
+    var pneu: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pneu)
+    var truck: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck)
+    var loja: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.loja)
 
 
     var btmL = BotaoBitmap(
+        this.context,
+        ((this.w * 0.1)).toFloat(),
+        (this.h * 0.7).toFloat(),
+        (this.w * 0.15).toInt(),
+        (this.w * 0.12).toInt(),
+        esquerda
+    )
+    var btmR = BotaoBitmap(
         this.context,
         ((this.w * 0.8)).toFloat(),
         (this.h * 0.7).toFloat(),
         (this.w * 0.12).toInt(),
         (this.w * 0.12).toInt(),
-        esquerda
-        )
-    var btmR = BotaoBitmap(
-        this.context,
-        ((this.w * 0.1)).toFloat(),
-        (this.h * 0.7).toFloat(),
-        (-this.w * 0.12).toInt(),
-        (this.w * 0.12).toInt(),
-        esquerda
+        direita
     )
+    var btmStart = BotaoBitmap(
+        this.context,
+        ((this.w * 0.8)).toFloat(),
+        (this.h * 0.2).toFloat(),
+        (this.w * 0.12).toInt(),
+        (this.w * 0.1).toInt(),
+        start
+    )
+    var btmPneu = BotaoBitmap(
+        this.context,
+        ((this.w * 0.7)).toFloat(),
+        (this.h * 0.3).toFloat(),
+        (this.w * 0.08).toInt(),
+        (this.w * 0.08).toInt(),
+        pneu
+    )
+    var btmLoja = BotaoBitmap(
+        this.context,
+        ((this.w * 0.6)).toFloat(),
+        (this.h * 0.2).toFloat(),
+        (this.w * 0.08).toInt(),
+        (this.w * 0.08).toInt(),
+        loja
+    )
+
+
     init {
 
-        carro.rotacao=0f
-        carro.rodaT.x=(w/2)+carro.largura/2
+        carro.rotacao = 0f
+        carro.rodaT.x = (w / 2) + carro.largura / 2
         carro.estacionado = true
-        carro.rodaT.y=-100f
-        carro.rodaF.y=-100f
+        carro.rodaT.y = (h * 0.4f)
+        carro.rodaF.y = (h * 0.5f)
         carregarlita()
 
 
@@ -64,7 +99,7 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
 
         fundo = Bitmap.createScaledBitmap(
             fundo,
-            (w/2).toInt(),
+            (w / 2).toInt(),
 
             (h).toInt(),
             false
@@ -85,7 +120,15 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
             (w * 0.15).toInt(),
             false
         )
-        offset =  Offset( ((w/2)-fundo.width/2).toFloat(),0f)
+        direita = Bitmap.createScaledBitmap(
+            direita,
+            (w * 0.15).toInt(),
+
+            (w * 0.15).toInt(),
+            false
+        )
+
+        offset = Offset(((w / 2) - fundo.width / 2).toFloat(), 0f)
 
 
     }
@@ -93,9 +136,10 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     fun update() {
 
 
-        carro.update(fundo,offset)
+        carro.update(fundo, offset)
 
     }
+
     private fun carregarlita() {
 
         inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassia))
@@ -110,7 +154,21 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
         inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassij))
         inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassik))
         inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassil))
+        //  inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassim))
 
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodac))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodab))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodaa))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodad))
+
+    }
+    fun getRoda() : Bitmap{
+       return  Bitmap.createScaledBitmap(
+            listaPneus[indexP],
+            (carro.rodaT.altura).toInt(),
+            (carro.rodaT.altura).toInt(),
+            false
+        )
 
     }
 
@@ -124,6 +182,15 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
         listaMonters.add(bitmapx)
     }
 
+    fun inserirIMGRoda(bitmap: Bitmap) {
+        var bitmapx = Bitmap.createScaledBitmap(
+            bitmap,
+            (carro.rodaT.altura*3).toInt(),
+            (carro.rodaT.altura*3).toInt(),
+            false
+        )
+        listaPneus.add(bitmapx)
+    }
 
     fun draw(canvas: Canvas) {
         val paint = Paint()
@@ -139,38 +206,126 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
             0f,
             paint
         )
-        canvas.drawBitmap(oficina,  0f,0f, null)
+        canvas.drawBitmap(oficina, 0f, 0f, null)
 
-        canvas.drawBitmap(fundo,  offset.x,offset.y, null)
+        canvas.drawBitmap(fundo, offset.x, offset.y, null)
+
+        if (!selectPneu) {
+            carro.draw(canvas)
 
 
-        carro.draw(canvas)
+        } else {
+            canvas.drawBitmap(listaPneus[indexP], ((this.w /2)-listaPneus[indexP].width/2).toFloat(), (this.h * 0.3).toFloat(), null)
+
+        }
 
         btmL.draw(canvas)
         btmR.draw(canvas)
+        btmPneu.draw(canvas)
+        btmStart.draw(canvas)
+        btmLoja.draw(canvas)
+
     }
 
     fun onTouchEvent(event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_DOWN) {
+        if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
 
-            if (btmL.containsTouch(
+            if (btmStart.containsTouch(
                     event.x,
                     event.y
                 )
             ) {
                 sair = true
-            }else {
+            } else {
+                if (btmR.containsTouch(
+                        event.x,
+                        event.y
+                    )
+                ) {
+                    if (selectPneu) {
+                        indexP++
 
-                index++
+                    } else {
+                        index++
+                    }
+
+
+                } else if (btmL.containsTouch(
+                        event.x,
+                        event.y
+                    )
+                ) {
+                    if (selectPneu) {
+                        indexP--
+
+                    } else {
+                        index--
+                    }
+                }else if (btmPneu.containsTouch(
+                        event.x,
+                        event.y
+                    )
+                ) {
+                   if(selectPneu){
+                       selectPneu = false
+                       btmPneu = BotaoBitmap(
+                           this.context,
+                           ((this.w * 0.7)).toFloat(),
+                           (this.h * 0.3).toFloat(),
+                           (this.w * 0.08).toInt(),
+                           (this.w * 0.08).toInt(),
+                           pneu
+                       )
+                   }else{
+                       selectPneu = true
+                       btmPneu = BotaoBitmap(
+                           this.context,
+                           ((this.w * 0.7)).toFloat(),
+                           (this.h * 0.3).toFloat(),
+                           (this.w * 0.08).toInt(),
+                           (this.w * 0.08).toInt(),
+                           truck
+                       )
+                   }
+                }
                 carro.rodaT.y = -100f
                 carro.rodaF.y = -100f
                 carro.rodaT.velocityY = 140f
                 carro.rodaF.velocityY = 150f
+                if (!selectPneu) {
+                    if (index >= listaMonters.size) {
+                        index = 0
+                    } else if (index < 0) {
+                        index = listaMonters.size - 1
+                    }
 
-                if (index >= listaMonters.size) {
-                    index = 0
+
+
+                } else {
+                    if (indexP >= listaPneus.size) {
+                        indexP = 0
+                    } else if (indexP < 0) {
+                        indexP = listaPneus.size - 1
+                    }
+
+
+                    val bitmapx = Bitmap.createScaledBitmap(
+                        listaPneus[indexP],
+                        (carro.rodaT.altura).toInt(),
+                        (carro.rodaT.altura).toInt(),
+                        false
+                    )
+                    carro.rodaT.bitmap = bitmapx
+                    carro.rodaF.bitmap = bitmapx
+
+
                 }
+
+
+
                 carro.bitmap = listaMonters[index]
+
+
 
             }
         }
