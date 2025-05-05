@@ -33,7 +33,7 @@ class Carro(context: Context) {
     var largura = 0f
     var altura = 150f
     var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia)
-
+    var alturaY = 150f
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
@@ -237,7 +237,7 @@ class Carro(context: Context) {
         val centerY = (rodaT.y + rodaF.y) / 2
        val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
        val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
-
+        alturaY = pontoChassiTras.y
         canvas.save()
         canvas.rotate(rotacao*-1, centerX, centerY)
 

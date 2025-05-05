@@ -14,10 +14,12 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.SurfaceHolder
+import androidx.compose.ui.graphics.toArgb
 import com.wao.skydodge.R
 import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
+import com.wao.skydodge.pistas.drawTrack
 import com.wao.skydodge.view.BotaoM
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.GameView
@@ -28,6 +30,7 @@ import com.wao.skydodge.view.Venceu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class GameLoop(
     private val surfaceHolder: SurfaceHolder,
@@ -250,12 +253,13 @@ class GameLoop(
 
 
         if (!gameouver) {
-            fundo.update()
+
 
 
             carro.colisao = colisao
 
-
+            updateCameraOffset(carro.rodaT.y)
+            fundo.update()
             carro.update(fundo)
             if(gameState==GameState.SELECAO) {
                 selecao.update()
@@ -404,10 +408,25 @@ class GameLoop(
 
 
     }
+    var cameraOffsetY = 0f
 
+    fun updateCameraOffset(carY: Float) {
+        val baseY = h * 0.6f
+        val targetOffsetY = max(0f, baseY - carY) * 0.5f
+        cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
+    }
     private fun drawGame(canvas: Canvas?) {
-         fundo.draw(canvas!!)
-         carro.draw(canvas!!)
+
+        canvas!!.save()
+        canvas.translate(0f, cameraOffsetY)
+
+        canvas.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+        fundo.draw(canvas)
+        carro.draw(canvas)
+
+        canvas.restore()
+
+
 
         if (gameouver) {
             paint.textSize = spToPx((this.w * 0.05f))
@@ -564,17 +583,34 @@ class GameLoop(
             (h).toInt(),
             false
         )
-        var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.terra)
+        var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmap)
         var cxs = Bitmap.createScaledBitmap(
             cxx,
-            (w).toInt(),
+            (w*48).toInt(),
 
             (h).toInt(),
             false
         )
+
+//val list: MutableList<Int> = mutableListOf()
+//        list.add(R.drawable.pathi1)
+//        list.add(R.drawable.pathi1)
+//
+//        list.add(R.drawable.pathi2)
+//        list.add(R.drawable.pathi3)
+
+
+      //  fundo.trackRenderer.loadTrackSegments(w,h,list)
+
+        ///fundo.mountainsY = -(h*0.5f).toFloat()
+
         fundo.backgroundClouds = n
-        fundo.backgroundMountains = fundo.gerarBitmapOnduladoComTextura(context, w * 3, h, cxs)
-        fundo.backgroundMountains2 = fundo.gerarBitmapOnduladoComTextura(context, w * 3, h, cxs)
+        fundo.backgroundMountains = cxs
+
+
+
+        fundo.backgroundMountains2 = cxs
+
         fundo.texturaBitmap = cxs
         fundo.backgroundSky = c
         fundo.mountainsX = 0f
