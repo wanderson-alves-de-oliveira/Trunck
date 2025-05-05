@@ -21,6 +21,7 @@ import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.pistas.drawTrack
 import com.wao.skydodge.view.BotaoM
+import com.wao.skydodge.view.Ceu
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.GameView
 import com.wao.skydodge.view.MahjongTile
@@ -74,6 +75,7 @@ class GameLoop(
     private var falhou = false
     private var carro = Carro(context)
     private var fundo = Fundo(context)
+    private var ceu = Ceu(context)
     private var gameouver = false
     var tutor = false
 
@@ -260,6 +262,12 @@ class GameLoop(
 
             updateCameraOffset(carro.rodaT.y)
             fundo.update()
+            if(fundo.mountainsSpeed>1){
+                ceu.corremdo = true
+            }else{
+                ceu.corremdo = false
+            }
+            ceu.update()
             carro.update(fundo)
             if(gameState==GameState.SELECAO) {
                 selecao.update()
@@ -416,11 +424,13 @@ class GameLoop(
         cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
     }
     private fun drawGame(canvas: Canvas?) {
-
-        canvas!!.save()
+        canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+        ceu.draw(canvas!!)
+        canvas.save()
         canvas.translate(0f, cameraOffsetY)
 
-        canvas.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+
+
         fundo.draw(canvas)
         carro.draw(canvas)
 
@@ -439,6 +449,12 @@ class GameLoop(
 
         }
 
+
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
+
     }
 
     private fun drawGameOver(canvas: Canvas?) {
@@ -446,6 +462,10 @@ class GameLoop(
     }
     private fun drawSelecao(canvas: Canvas?) {
         selecao.draw(canvas!! )
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
     }
 
     private fun drawShop(canvas: Canvas?) {
@@ -550,13 +570,18 @@ class GameLoop(
 
 
         }
-
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
     }
 
     private fun render() {
 
-
-        canvas = surfaceHolder.lockCanvas()
+        if (!cLocked) {
+            canvas = this.surfaceHolder.lockCanvas()
+            cLocked = true
+        }
 
     }
 
@@ -604,7 +629,7 @@ class GameLoop(
 
         ///fundo.mountainsY = -(h*0.5f).toFloat()
 
-        fundo.backgroundClouds = n
+        ceu.backgroundClouds = n
         fundo.backgroundMountains = cxs
 
 
@@ -612,10 +637,10 @@ class GameLoop(
         fundo.backgroundMountains2 = cxs
 
         fundo.texturaBitmap = cxs
-        fundo.backgroundSky = c
+        ceu.backgroundSky = c
         fundo.mountainsX = 0f
 
-        fundo.mountainsX2 = fundo.backgroundMountains2.width.toFloat() //+ 1800
+        fundo.mountainsX2 = 0f//+ 1800
     }
 
     private fun popularTiles() {
@@ -771,7 +796,7 @@ class GameLoop(
 
                             fundo.mountainsX = 0f
 
-                            fundo.mountainsX2 = fundo.backgroundMountains2.width.toFloat() //+ 1800
+                            fundo.mountainsX2 = 0f //+ 1800
                         }
 
                         fundo.reduzindo = true

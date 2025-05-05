@@ -15,72 +15,39 @@ import com.wao.skydodge.pistas.generateTrack
 import java.util.Random
 import kotlin.math.sin
 
-class Fundo (val context: Context){
+class Ceu (val context: Context){
     // Em GameView
     var skyX = 0f
     var cloudsX = 0f
-    var mountainsX = 0f
 
 
-    var mountainsY = 0f
-    var mountainsY2 = -50f
-     var mountainsSpeed = 0f
-    var reduzindo = false
+     val skySpeed = 1f
+    val cloudsSpeed = 3f
+     var corremdo = false
     var distancia = 0
-     lateinit var backgroundMountains: Bitmap
-    lateinit var backgroundMountains2: Bitmap
-    lateinit var texturaBitmap: Bitmap
+    lateinit var backgroundSky: Bitmap
+    lateinit var backgroundClouds: Bitmap
+
     val trackRenderer = TrackRenderer(context)
 
-    var mountainsX2 = 0f
     var yBaseAux = 400f
     fun update() {
+if(corremdo) {
+    skyX -= skySpeed
+    cloudsX -= cloudsSpeed
+}
 
 
 
 
 
-// No método de atualização:
-
-
-        if(reduzindo){
-            mountainsSpeed-= mountainsSpeed*0.1f
-            if(mountainsSpeed<=0){
-                mountainsSpeed=0f
-                reduzindo = false
-            }
-        }else if(mountainsSpeed>90){
-                mountainsSpeed=90f
-
-            }
-
-
-
-        mountainsX -= mountainsSpeed
-        mountainsX2 -= mountainsSpeed
-
-
-        trackRenderer.updateScroll(mountainsX)
-
-        distancia+=mountainsSpeed.toInt()
-
-        if (mountainsX <= -(backgroundMountains.width)) {
-         //   backgroundMountains = gerarBitmapOnduladoComTextura(context,(backgroundMountains.width).toInt(),backgroundMountains.height,texturaBitmap)
-
-          //  backgroundMountains = geraHibrido()
-            //backgroundMountains2 = drawTrack(canvas, track)
-           // mountainsX = mountainsX2+backgroundMountains.width.toFloat()
-            mountainsX = 0f
-
+        if (skyX <= -backgroundSky.width) {
+            skyX = 0f
+        }
+        if (cloudsX <= -backgroundClouds.width) {
+            cloudsX = 0f
         }
 
-        if (mountainsX2 <= -(backgroundMountains2.width)) {
-           // backgroundMountains2 = geraHibrido()
-           // mountainsX2 = mountainsX+backgroundMountains2.width.toFloat()
-            mountainsX2 = 0f
-
-
-        }
 
 
 
@@ -89,30 +56,19 @@ class Fundo (val context: Context){
 
       fun draw(canvas: Canvas) {
 
+          canvas.drawBitmap(backgroundSky, skyX, 0f, null)
+          canvas.drawBitmap(backgroundSky, skyX + backgroundSky.width, 0f, null)
 
-          canvas.drawBitmap(backgroundMountains, mountainsX, mountainsY, null) // 400f é um exemplo de altura
-         canvas.drawBitmap(backgroundMountains2, mountainsX2, mountainsY2, null)
-
+          // Desenha as nuvens
+          canvas.drawBitmap(backgroundClouds, cloudsX, 100f, null) // 100f é um exemplo de altura
+          canvas.drawBitmap(backgroundClouds, cloudsX + backgroundClouds.width, 100f, null)
 
 
 
         // ... desenha o restante do jogo
     }
-fun geraHibrido():Bitmap{
-    val track = generateTrack(50)
-    val b :Bitmap = Bitmap.createBitmap(backgroundMountains.width,backgroundMountains.height,Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(b)
-    trackRenderer.draw(canvas)
-    return b
-}
-//
-//    fun geraHibrido():Bitmap{
-//        val track = generateTrack(50)
-//        val b :Bitmap = Bitmap.createBitmap(backgroundMountains.width,backgroundMountains.height,Bitmap.Config.ARGB_8888)
-//        val canvas = Canvas(b)
-//        drawTrack(canvas, track)
-//        return b
-//    }
+
+
 
     fun gerarBitmapOnduladoComTextura(context: Context, largura: Int, altura: Int, texturaBitmap: Bitmap): Bitmap {
         val bitmap = Bitmap.createBitmap(largura, altura, Bitmap.Config.ARGB_8888)

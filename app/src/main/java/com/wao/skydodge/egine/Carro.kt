@@ -39,8 +39,8 @@ class Carro(context: Context) {
     private val w = display.widthPixels
 
     init {
-        rodaF.x = 500f
-        rodaT.x = 300f
+        rodaF.x = 800f
+        rodaT.x = 600f
 
          largura = rodaT.x - (rodaF.x+(rodaT.largura*1.05f))
          altura = 150f
@@ -182,17 +182,19 @@ class Carro(context: Context) {
 
             colidiu(roda)
 
-        } else if (colisao.colideComMapa(
-                rect,
-                fundo.backgroundMountains2,
-                (fundo.mountainsX2.toInt()),
-                fundo.mountainsY.toInt()
-            )
-        ) {
-
-            //  gameouver = true
-            colidiu(roda)
-        } else {
+        }
+//        else if (colisao.colideComMapa(
+//                rect,
+//                fundo.backgroundMountains2,
+//                (fundo.mountainsX2.toInt()),
+//                fundo.mountainsY.toInt()
+//            )
+//        ) {
+//
+//            //  gameouver = true
+//            colidiu(roda)
+//        }
+        else {
             roda.gravity = 2.0f
 
         }
@@ -238,30 +240,36 @@ class Carro(context: Context) {
        val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
        val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
         alturaY = pontoChassiTras.y
-        canvas.save()
-        canvas.rotate(rotacao*-1, centerX, centerY)
 
-     //   paintAmortecedor.color = Color.RED
-        canvas.drawLine(
-            pontoChassiTras.x,
-            pontoChassiTras.y,
-            rodaT.x+(rodaT.largura*0.5f),
-            rodaT.y+(rodaT.largura*0.5f),
-            paintAmortecedor
-        )
-       // paintAmortecedor.color = Color.BLUE
-// Desenha amortecedor dianteiro
-        canvas.drawLine(
-            pontoChassiFrente.x,
-            pontoChassiFrente.y,
-            rodaF.x+(rodaT.largura*0.5f),
-            rodaF.y+(rodaT.largura*0.5f),
-            paintAmortecedor
-        )
-        rodaT.draw(canvas)
-        rodaF.draw(canvas)
+       if(rotacao*-1<=50) {
 
-        canvas.restore()
+           canvas.save()
+           canvas.rotate(rotacao * -1, centerX, centerY)
+           canvas.drawLine(
+               pontoChassiTras.x,
+               pontoChassiTras.y,
+               rodaT.x + (rodaT.largura * 0.5f),
+               rodaT.y + (rodaT.largura * 0.5f),
+               paintAmortecedor
+           )
+
+           canvas.drawLine(
+               pontoChassiFrente.x,
+               pontoChassiFrente.y,
+               rodaF.x + (rodaT.largura * 0.5f),
+               rodaF.y + (rodaT.largura * 0.5f),
+               paintAmortecedor
+           )
+           rodaT.draw(canvas)
+           rodaF.draw(canvas)
+
+           canvas.restore()
+       }else{
+           rodaT.draw(canvas)
+           rodaF.draw(canvas)
+       }
+
+
         canvas.save()
         canvas.rotate(rotacao*-1.8f, centerX, centerY)
 
