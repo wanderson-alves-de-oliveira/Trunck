@@ -16,19 +16,25 @@ import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.ferramentas.ModoDeslise
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.Roda
+import java.lang.StrictMath.random
 import java.lang.StrictMath.toDegrees
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Carro(context: Context) {
+class CarroRival(context: Context) {
     var colisao = Colisao()
       var rodaF = Roda(context)
       var rodaT = Roda(context)
      var screenHeight = 0
     var reduzindo = false
+    var reduzindoR = false
     var parou = false
  var estacionado = false
+   var  inicio = false
+    var km = 0f
+    var velocidadeX = 0f
+    var velocidadeR = 0f
     var rotacao = 0f
     var largura = 0f
     var altura = 150f
@@ -37,7 +43,8 @@ class Carro(context: Context) {
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
-
+   val  f= 800f
+    val t = 600f
     init {
         rodaF.x = 800f
         rodaT.x = 600f
@@ -57,7 +64,13 @@ class Carro(context: Context) {
         )
     }
 
+fun moverX(vel : Float){
+    rodaF.x+=vel
+    rodaT.x+=vel
 
+    rodaF.velocidadedoGiro += 1
+    rodaT.velocidadedoGiro += 1
+}
     fun iniciarRodas() {
         rodaF.screenHeight
         rodaT.screenHeight
@@ -66,6 +79,7 @@ class Carro(context: Context) {
 
         rodaF.update()
         rodaT.update()
+
         if(reduzindo){
 
             rodaF.reduzindo = true
@@ -85,6 +99,33 @@ class Carro(context: Context) {
     }
     fun update(fundo: Fundo) {
 
+        if(inicio) {
+          verificarPosiçãoPista(fundo)
+
+            if(reduzindoR){
+                if(velocidadeX>velocidadeR){
+                    velocidadeX-=2
+
+                }else{
+
+                    reduzindoR=false
+                }
+
+            }else{
+                velocidadeX+=2
+                if(velocidadeX>140){
+                    velocidadeR=( (125..140).random()).toFloat()
+                    reduzindoR=true
+                }
+            }
+
+
+            moverX(velocidadeX)
+            km += velocidadeX
+            if(km>fundo.backgroundMountains.width){
+                km=fundo.backgroundMountains.width.toFloat()
+            }
+        }
         rodaF.update()
         rodaT.update()
         if(reduzindo){
@@ -111,6 +152,14 @@ class Carro(context: Context) {
 
         verirficarColisao(fundo, rodaF)
         verirficarColisao(fundo, rodaT)
+
+    }
+
+    private fun verificarPosiçãoPista(fundo: Fundo) {
+
+        rodaF.x= (f+km)
+        rodaT.x= (t+km)
+
 
     }
 

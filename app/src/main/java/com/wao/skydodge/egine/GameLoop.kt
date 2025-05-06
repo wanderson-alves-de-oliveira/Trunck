@@ -19,6 +19,7 @@ import com.wao.skydodge.R
 import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
+import com.wao.skydodge.pistas.TrackRenderer
 import com.wao.skydodge.pistas.drawTrack
 import com.wao.skydodge.view.BotaoM
 import com.wao.skydodge.view.Ceu
@@ -31,6 +32,7 @@ import com.wao.skydodge.view.Venceu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.math.max
 
 class GameLoop(
@@ -48,7 +50,7 @@ class GameLoop(
     private val optimalTime = 1_000_000_000 / targetFps
     private var isTouched = false
 
-
+    private val trackRenderer = TrackRenderer(context)
     private var avaliar3 = false
     private var gameState = GameState.MENU
     private var gameStateAUX = GameState.MENU
@@ -69,11 +71,12 @@ class GameLoop(
     var pontos = 0
     private var pontosCont = 0
 
-    private val selecao = Selecao(context,w,h)
+    private val selecao = Selecao(context, w, h)
 
     private var venceu = false
     private var falhou = false
     private var carro = Carro(context)
+    private var carroRival = CarroRival(context)
     private var fundo = Fundo(context)
     private var ceu = Ceu(context)
     private var gameouver = false
@@ -156,6 +159,7 @@ class GameLoop(
     private var imaP = 0
     private var sufleP = 0
     private val colisao = Colisao()
+    private val colisao2 = Colisao()
     private var ultimaFase = 0
 
     private var btm = BotaoM(
@@ -246,673 +250,689 @@ class GameLoop(
     private var canvas: Canvas? = null
     private fun update() {
 
+        runBlocking {
 
-        //  this.canvas = null
+            if (!gameouver) {
+                launch(Dispatchers.Default) {
+                    carro.colisao = colisao
+                    carro.update(fundo)
+                    updateCameraOffset(carro.rodaT.y)
 
-//        if (lojaWAO.abrirLoja == false) {
-//            gameState = gameStateAUX
-//        }
 
 
-        if (!gameouver) {
+                    carroRival.colisao = colisao2
 
-
-
-            carro.colisao = colisao
-
-            updateCameraOffset(carro.rodaT.y)
-            fundo.update()
-            if(fundo.mountainsSpeed>1){
-                ceu.corremdo = true
-            }else{
-                ceu.corremdo = false
-            }
-            ceu.update()
-            carro.update(fundo)
-            if(gameState==GameState.SELECAO) {
-                selecao.update()
-            }
-        }
-
-
-        draw()
-
-
-    }
-
-
-
-    private fun sleep() {
-        try {
-            Thread.sleep(17) // Aproximadamente 60 FPS
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun adsr() {
-        gameView.showRewardedAd(
-            onReward = {
-                premiar = true
-            },
-            onAdClosed = {
-                if (premiar) {
-                    receberPremio()
-                }
-                gameView.recarregarRewardedAd()
-            }
-        )
-    }
-
-    private fun adsi() {
-        finalizarFase()
-        gameView.showInterstitialAd(
-
-            onAdClosed = {
-
-                gameView.recarregarIntersticialAd()
-
-            }
-
-        )
-    }
-
-    private fun receberPremio() {
-        premiar = false
-
-        when (tipodePremio) {
-            0 -> reviver()
-            1 -> luzP += 3
-            2 -> imaP += 3
-            3 -> sufleP += 3
-            4 -> {
-                score += 50
-
-                venceuP.btmCoin.liberar = 0
-            }
-        }
-
-        val bd = BDSky(context)
-        // val base = bd.buscar()
-        bd.atualizar(Base(fase, score.toLong(), luzP, imaP, sufleP))
-
-    }
-
-    private fun reviver() {
-        perdeuL =
-            Venceu(this.context, (w), (h), 1)
-        perdeuL.btm.liberar = 0
-    }
-
-    private fun criditar(obj: Venceu, canvas: Canvas) {
-
-
-        obj.pontos = score
-        obj.fase = ultimaFase + 1
-        obj.pontos = score
-
-        obj.draw(canvas)
-
-
-    }
-
-    private fun posCredito(obj: Venceu) {
-        val bd = BDSky(context)
-        score -= valorminimo
-        val base = bd.buscar()
-        base.pontos = score.toLong()
-        base.luz = luzP
-        base.ima = imaP
-        base.sufle = sufleP
-        bd.atualizar(base)
-
-        obj.btmCoin.liberar = 0
-    }
-
-    private fun finalizarFase() {
-
-        fase++
-
-        venceu = false
-        venceuP = Venceu(this.context, (w), (h), 0)
-        val bd = BDSky(context)
-        val base = bd.buscar()
-        bd.atualizar(Base(fase, score.toLong(), base.luz, base.ima, base.sufle))
-
-        ultimaFase = fase
-
-        popularTiles()
-
-
-    }
-
-    private fun draw() {
-
-
-        try {
-
-            if (timePress > 0) {
-                timePress--
-
-            }
-
-            when (gameState) {
-                GameState.MENU -> drawMenu(canvas)
-                GameState.PLAYING -> drawGame(canvas)
-                GameState.GAME_OVER -> drawGameOver(canvas)
-                GameState.SHOP -> drawShop(canvas)
-                GameState.SELECAO -> drawSelecao(canvas)
-            }
-
-
-        } catch (e: Exception) {
-            // Handle any exceptions that occur during drawing
-            e.printStackTrace()
-        } finally {
-            if (canvas != null) {
-                surfaceHolder.unlockCanvasAndPost(canvas)
-            }
-        }
-
-
-    }
-    var cameraOffsetY = 0f
-
-    fun updateCameraOffset(carY: Float) {
-        val baseY = h * 0.6f
-        val targetOffsetY = max(0f, baseY - carY) * 0.5f
-        cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
-    }
-    private fun drawGame(canvas: Canvas?) {
-        canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
-        ceu.draw(canvas!!)
-        canvas.save()
-        canvas.translate(0f, cameraOffsetY)
-
-
-
-        fundo.draw(canvas)
-        carro.draw(canvas)
-
-        canvas.restore()
-
-
-
-        if (gameouver) {
-            paint.textSize = spToPx((this.w * 0.05f))
-            canvas.drawText("FIM DE JOGO", 100f, 790f, paint)
-        } else {
-
-            paint.textSize = spToPx((this.w * 0.01f))
-            canvas.drawText("Nivel ${(fundo.mountainsSpeed - 15).toInt()}", 100f, 290f, paint)
-            canvas.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
-
-        }
-
-
-        if (cLocked) {
-            surfaceHolder.unlockCanvasAndPost(canvas)
-            cLocked = false
-        }
-
-    }
-
-    private fun drawGameOver(canvas: Canvas?) {
-        TODO("Not yet implemented")
-    }
-    private fun drawSelecao(canvas: Canvas?) {
-        selecao.draw(canvas!! )
-        if (cLocked) {
-            surfaceHolder.unlockCanvasAndPost(canvas)
-            cLocked = false
-        }
-    }
-
-    private fun drawShop(canvas: Canvas?) {
-        lojaWAO.semanuncio = semanuncio
-        lojaWAO.draw(canvas!!)
-    }
-
-    private fun drawMenu(canvas: Canvas?) {
-
-        if (ultimaFase == 0) {
-            val bd = BDSky(context)
-            val base = bd.buscar()
-            ultimaFase = base.nivel
-            fase = ultimaFase
-
-
-        }
-        btm.stt = "Nível $ultimaFase"
-
-        if (canvas != null) {
-
-            try {
-                if (lojaWAO.atualizar) {
-                    val bd = BDSky(context)
-                    val base = bd.buscar()
-                    luzP = base.luz
-                    imaP = base.ima
-                    sufleP = base.sufle
-                    score = bd.buscar().pontos.toInt()
-                    lojaWAO.atualizar = false
 
                 }
+                launch(Dispatchers.Default) {
+                  //  trackRenderer.updateScroll(fundo.mountainsSpeed)
+                   // fundo.backgroundMountains = trackRenderer.draw(canvas!!)
+
+                    fundo.update(trackRenderer)
+//                    if(carroRival.rodaT.x<0 || carroRival.rodaT.x>w){
+//                        carroRival.rodaT.gravity = 0f
+//                        carroRival.rodaF.gravity = 0f
+//                    }else{
+//                        carroRival.rodaT.gravity = 3f
+//                        carroRival.rodaF.gravity = 3f
+//                    }
+                    carroRival.update(fundo)
 
 
-                main.draw(this.canvas!!)
-
-                if (preload >= 100) {
-
-                    if (!semanuncio) {
-
-                        noADS.draw(canvas!!)
-                        compraBT.x = (w * 0.35f)
+                    if (fundo.mountainsSpeed > 1) {
+                        ceu.corremdo = true
                     } else {
-                        compraBT.x = (w * 0.45f)
-
+                        ceu.corremdo = false
                     }
-
-
-                    compraBT.draw(canvas!!)
-                    btm.draw(this.canvas!!)
-
-
-                } else {
-                    paint.color = Color.GREEN
-                    canvas!!.drawRoundRect(
-                        RectF(
-                            (w * 0.25f),
-                            h * 0.45f,
-                            ((w * 0.45f) + (100 * (w * 0.003f))),
-                            ((h * 0.5)).toFloat()
-                        ), 60f, 60f, paint
-                    )
-                    paint.color = Color.MAGENTA
-                    canvas!!.drawRoundRect(
-                        RectF(
-                            (w * 0.25f),
-                            h * 0.45f,
-                            ((w * 0.45f) + (preload * (w * 0.003f))),
-                            ((h * 0.5)).toFloat()
-                        ), 60f, 60f, paint
-                    )
-
-                    paint.textSize = spToPx((this.w * 0.014f))
-                    paint.color = Color.WHITE
-                    canvas!!.drawText(
-                        "LOADING...",
-                        (w * 0.36f),
-                        h * 0.48f,
-                        paint
-                    )
-
-
-                    preload += 20
                 }
 
-                if (btm.liberar > 3) {
-                    index = 1
-                    btm.liberar = 0
-                    compraBT.y = h * 0.06f
-                    compraBT.x = w * 0.78f
-                    gameState = GameState.PLAYING
-                    gameStateAUX = gameState
-                }
+                launch(Dispatchers.Default) {
+                    ceu.update()
 
-
-                ///////////////////////////////////////////
-
-
-            } catch (ew: Exception) {
-                ew.stackTrace
-            }
-
-
-        }
-        if (cLocked) {
-            surfaceHolder.unlockCanvasAndPost(canvas)
-            cLocked = false
-        }
-    }
-
-    private fun render() {
-
-        if (!cLocked) {
-            canvas = this.surfaceHolder.lockCanvas()
-            cLocked = true
-        }
-
-    }
-
-    private fun handleInput() {
-
-    }
-
-    private fun init() {
-        carro.screenHeight = h
-        carro.iniciarRodas()
-        var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.nuven)
-        var n = Bitmap.createScaledBitmap(
-            nx,
-            (w).toInt(),
-            (h).toInt(),
-            false
-        )
-
-
-        var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceu)
-        var c = Bitmap.createScaledBitmap(
-            cx,
-            (w).toInt(),
-            (h).toInt(),
-            false
-        )
-        var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmap)
-        var cxs = Bitmap.createScaledBitmap(
-            cxx,
-            (w*48).toInt(),
-
-            (h).toInt(),
-            false
-        )
-
-//val list: MutableList<Int> = mutableListOf()
-//        list.add(R.drawable.pathi1)
-//        list.add(R.drawable.pathi1)
-//
-//        list.add(R.drawable.pathi2)
-//        list.add(R.drawable.pathi3)
-
-
-      //  fundo.trackRenderer.loadTrackSegments(w,h,list)
-
-        ///fundo.mountainsY = -(h*0.5f).toFloat()
-
-        ceu.backgroundClouds = n
-        fundo.backgroundMountains = cxs
-
-
-
-        fundo.backgroundMountains2 = cxs
-
-        fundo.texturaBitmap = cxs
-        ceu.backgroundSky = c
-        fundo.mountainsX = 0f
-
-        fundo.mountainsX2 = 0f//+ 1800
-    }
-
-    private fun popularTiles() {
-        avaliar3 = false
-        ajustarY = true
-        pontos = 0
-
-        try {
-
-
-            val canvasB = Canvas(b3)
-            canvasB.drawColor(
-                Color.TRANSPARENT,
-                PorterDuff.Mode.CLEAR
-            )
-            paint.color = Color.BLACK
-            paint.alpha = 150
-
-
-            canvasB.drawRoundRect(
-                RectF(
-                    (this.w * 0.08).toFloat(),
-                    ((this.h * 0.75).toFloat() - (this.w * 0.03).toFloat()),
-                    (this.w * 0.93).toFloat(),
-                    ((this.h * 0.75)).toFloat() + (((this.w * 0.9 / 8).toInt()) * 1.22f)
-                ), 30f, 30f, paint
-            )
-            paint.color = Color.BLUE
-            paint.alpha = 150
-
-            canvasB.drawRoundRect(
-                RectF(
-                    (this.w * 0.09).toFloat(),
-                    ((this.h * 0.75).toFloat() - (this.w * 0.02).toFloat()),
-                    (this.w * 0.92).toFloat(),
-                    ((this.h * 0.75).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.15f)
-                ), 30f, 30f, paint
-            )
-            paint.color = Color.GREEN
-            paint.alpha = 150
-
-            canvasB.drawRoundRect(
-                RectF(
-                    (this.w * 0.09).toFloat(),
-                    ((this.h * 0.755).toFloat() - (this.w * 0.02).toFloat()),
-                    (this.w * 0.92).toFloat(),
-                    ((this.h * 0.755).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.0f)
-                ), 30f, 30f, paint
-            )
-            paint.color = Color.BLACK
-            paint.alpha = 255
-
-        } catch (ett: Exception) {
-            ett.stackTrace
-        }
-
-
-        val bd = BDSky(context)
-        ultimaFase = bd.buscar().nivel
-
-
-        val base = bd.buscar()
-
-        luzP = base.luz
-        imaP = base.ima
-        sufleP = base.sufle
-        score = bd.buscar().pontos.toInt()
-
-        fase = ultimaFase
-
-
-
-        walld.shuffle()
-
-    }
-
-
-    private fun onTocarEfeito(i: Int) {
-        val coroutineScope = CoroutineScope(Dispatchers.Default)
-
-        coroutineScope.launch {
-
-            if (i == 0) {
-                if (!efeitoSonoro.isPlaying) {
-                    efeitoSonoro.setVolume(0.2f, 0.2f)
-                    efeitoSonoro.seekTo(0)
-                    efeitoSonoro.start()
-                } else {
-                    efeitoSonoro.pause()
-                    efeitoSonoro.setVolume(0.2f, 0.2f)
-                    efeitoSonoro.seekTo(0)
-                    efeitoSonoro.start()
-                }
-            } else if (i == 1) {
-                if (!efeitoSonoro2.isPlaying) {
-                    efeitoSonoro2.setVolume(0.2f, 0.2f)
-                    efeitoSonoro2.seekTo(0)
-                    efeitoSonoro2.start()
-                } else {
-                    efeitoSonoro2.pause()
-                    efeitoSonoro2.setVolume(0.2f, 0.2f)
-                    efeitoSonoro2.seekTo(0)
-                    efeitoSonoro2.start()
+                    if (gameState == GameState.SELECAO) {
+                        selecao.update()
+                    }
                 }
             }
 
+        }
 
+
+    draw()
+
+
+}
+
+
+private fun sleep() {
+    try {
+        Thread.sleep(17) // Aproximadamente 60 FPS
+    } catch (e: InterruptedException) {
+        e.printStackTrace()
+    }
+}
+
+private fun adsr() {
+    gameView.showRewardedAd(
+        onReward = {
+            premiar = true
+        },
+        onAdClosed = {
+            if (premiar) {
+                receberPremio()
+            }
+            gameView.recarregarRewardedAd()
+        }
+    )
+}
+
+private fun adsi() {
+    finalizarFase()
+    gameView.showInterstitialAd(
+
+        onAdClosed = {
+
+            gameView.recarregarIntersticialAd()
+
+        }
+
+    )
+}
+
+private fun receberPremio() {
+    premiar = false
+
+    when (tipodePremio) {
+        0 -> reviver()
+        1 -> luzP += 3
+        2 -> imaP += 3
+        3 -> sufleP += 3
+        4 -> {
+            score += 50
+
+            venceuP.btmCoin.liberar = 0
         }
     }
 
+    val bd = BDSky(context)
+    // val base = bd.buscar()
+    bd.atualizar(Base(fase, score.toLong(), luzP, imaP, sufleP))
 
-    fun onTouchEvent(event: MotionEvent): Boolean {
+}
 
-        if (gameState == GameState.PLAYING) {
+private fun reviver() {
+    perdeuL =
+        Venceu(this.context, (w), (h), 1)
+    perdeuL.btm.liberar = 0
+}
 
-            if (event.action == MotionEvent.ACTION_DOWN && event.x>w*0.8f) {
-                selecao.sair = false
-                gameState = GameState.SELECAO
-            }else{
-
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        // Inicia a ação quando o toque começa
-                        isTouching = true
-                        carro.applyLift()  // Faz o avião subir quando pressionado
-                        carro.parou = false
-                        fundo.reduzindo = false
-                        //carro.reduzindo = false
-
-                        fundo.mountainsSpeed+=1f
-                        return true
-                    }
-
-                    MotionEvent.ACTION_MOVE -> {
-                        // Mantém a ação enquanto o dedo estiver se movendo na tela
-                        if (isTouching) {
-                            // player.applyLift()  // Continua fazendo o avião subir
-                            carro.applyLift()
-                            fundo.reduzindo = false
-                            carro.rodaF.reduzindo = false
-                            carro.rodaT.reduzindo = false
-                            carro.parou = false
-                            //  carro.reduzindo = false
-                            fundo.mountainsSpeed+=1f
-                        }
-                        return true
-                    }
-
-                    MotionEvent.ACTION_UP -> {
-                        if (gameouver) {
-                            gameouver = false
-                            fundo.distancia = 0
-
-                            fundo.mountainsX = 0f
-
-                            fundo.mountainsX2 = 0f //+ 1800
-                        }
-
-                        fundo.reduzindo = true
-                        carro.reduzindo = true
-                        isTouching = false
-                        return true
-                    }
-
-                    else -> return false
-                }
-            }
+private fun criditar(obj: Venceu, canvas: Canvas) {
 
 
+    obj.pontos = score
+    obj.fase = ultimaFase + 1
+    obj.pontos = score
 
-        } else {
+    obj.draw(canvas)
 
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> handleTouch(event)
-            }
+
+}
+
+private fun posCredito(obj: Venceu) {
+    val bd = BDSky(context)
+    score -= valorminimo
+    val base = bd.buscar()
+    base.pontos = score.toLong()
+    base.luz = luzP
+    base.ima = imaP
+    base.sufle = sufleP
+    bd.atualizar(base)
+
+    obj.btmCoin.liberar = 0
+}
+
+private fun finalizarFase() {
+
+    fase++
+
+    venceu = false
+    venceuP = Venceu(this.context, (w), (h), 0)
+    val bd = BDSky(context)
+    val base = bd.buscar()
+    bd.atualizar(Base(fase, score.toLong(), base.luz, base.ima, base.sufle))
+
+    ultimaFase = fase
+
+    popularTiles()
+
+
+}
+
+private fun draw() {
+
+
+    try {
+
+        if (timePress > 0) {
+            timePress--
+
         }
-        return true
-    }
 
-    private fun handleTouch(event: MotionEvent) {
         when (gameState) {
-            GameState.MENU -> {
-                if (compraBT.containsTouch(
-                        event.x,
-                        event.y
-                    )
-                ) {
-                    gameStateAUX = gameState
-                    gameState = GameState.SHOP
-                    lojaWAO.moedas = -2
-                    lojaWAO.abrirLoja = true
-
-
-                } else if (noADS.containsTouch(
-                        event.x,
-                        event.y
-                    ) && !semanuncio
-                ) {
-
-                    gameView.comprar("remove_ads")
-
-
-                }
-
-                if (btm.containsTouch(
-                        event.x,
-                        event.y
-                    )
-                ) {
-
-                    gameStateAUX = gameState
-                    selecao.sair = false
-                   gameState = GameState.SELECAO
-
-                    // gameState = GameState.PLAYING
-
-                }
-            }
-
-            GameState.GAME_OVER -> {
-
-            }
-
-            GameState.SHOP -> {
-
-                lojaWAO.onTouchEvent(event)
-            }   GameState.SELECAO -> {
-
-                if(!selecao.sair) {
-                    selecao.onTouchEvent(event)
-                    if(selecao.sair) {
-                        carro.bitmap = selecao.listaMonters[selecao.index]
-                        carro.rodaF.bitmap = selecao.getRoda()
-                        carro.rodaT.bitmap = selecao.getRoda()
-                        gameState = GameState.PLAYING
-                    }
-
-                }else{
-                    carro.bitmap=selecao.listaMonters[selecao.index]
-                    carro.rodaF.bitmap=selecao.getRoda()
-                    carro.rodaT.bitmap=selecao.getRoda()
-                    gameState = GameState.PLAYING
-
-                }
-
-
+            GameState.MENU -> drawMenu(canvas)
+            GameState.PLAYING -> drawGame(canvas)
+            GameState.GAME_OVER -> drawGameOver(canvas)
+            GameState.SHOP -> drawShop(canvas)
+            GameState.SELECAO -> drawSelecao(canvas)
         }
 
-            else -> {}
+
+    } catch (e: Exception) {
+        // Handle any exceptions that occur during drawing
+        e.printStackTrace()
+    } finally {
+        if (canvas != null) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
         }
     }
 
 
-    private fun Float.toDp(resources: Resources): Float {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            this,
-            resources.displayMetrics
-        )
+}
+
+var cameraOffsetY = 0f
+
+fun updateCameraOffset(carY: Float) {
+    val baseY = h * 0.6f
+    val targetOffsetY = max(0f, baseY - carY) * 0.5f
+    cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
+}
+
+private fun drawGame(canvas: Canvas?) {
+    canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+    ceu.draw(canvas!!)
+    canvas.save()
+    canvas.translate(0f, cameraOffsetY)
+
+
+
+   fundo.draw(canvas)
+   // trackRenderer.draw(canvas)
+    carro.draw(canvas)
+    carroRival.draw(canvas)
+    canvas.restore()
+
+
+
+    if (gameouver) {
+        paint.textSize = spToPx((this.w * 0.05f))
+        canvas.drawText("FIM DE JOGO", 100f, 790f, paint)
+    } else {
+
+        paint.textSize = spToPx((this.w * 0.01f))
+        canvas.drawText("Nivel ${(fundo.mountainsSpeed - 15).toInt()}", 100f, 290f, paint)
+        canvas.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
+
     }
 
 
-    private fun spToPx(sp: Float): Float {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP,
-            sp,
-            context.resources.displayMetrics
-        )
+    if (cLocked) {
+        surfaceHolder.unlockCanvasAndPost(canvas)
+        cLocked = false
     }
 
 }
 
+private fun drawGameOver(canvas: Canvas?) {
+    TODO("Not yet implemented")
+}
+
+private fun drawSelecao(canvas: Canvas?) {
+    selecao.draw(canvas!!)
+    if (cLocked) {
+        surfaceHolder.unlockCanvasAndPost(canvas)
+        cLocked = false
+    }
+}
+
+private fun drawShop(canvas: Canvas?) {
+    lojaWAO.semanuncio = semanuncio
+    lojaWAO.draw(canvas!!)
+}
+
+private fun drawMenu(canvas: Canvas?) {
+
+    if (ultimaFase == 0) {
+        val bd = BDSky(context)
+        val base = bd.buscar()
+        ultimaFase = base.nivel
+        fase = ultimaFase
+
+
+    }
+    btm.stt = "Nível $ultimaFase"
+
+    if (canvas != null) {
+
+        try {
+            if (lojaWAO.atualizar) {
+                val bd = BDSky(context)
+                val base = bd.buscar()
+                luzP = base.luz
+                imaP = base.ima
+                sufleP = base.sufle
+                score = bd.buscar().pontos.toInt()
+                lojaWAO.atualizar = false
+
+            }
+
+
+            main.draw(this.canvas!!)
+
+            if (preload >= 100) {
+
+                if (!semanuncio) {
+
+                    noADS.draw(canvas!!)
+                    compraBT.x = (w * 0.35f)
+                } else {
+                    compraBT.x = (w * 0.45f)
+
+                }
+
+
+                compraBT.draw(canvas!!)
+                btm.draw(this.canvas!!)
+
+
+            } else {
+                paint.color = Color.GREEN
+                canvas!!.drawRoundRect(
+                    RectF(
+                        (w * 0.25f),
+                        h * 0.45f,
+                        ((w * 0.45f) + (100 * (w * 0.003f))),
+                        ((h * 0.5)).toFloat()
+                    ), 60f, 60f, paint
+                )
+                paint.color = Color.MAGENTA
+                canvas!!.drawRoundRect(
+                    RectF(
+                        (w * 0.25f),
+                        h * 0.45f,
+                        ((w * 0.45f) + (preload * (w * 0.003f))),
+                        ((h * 0.5)).toFloat()
+                    ), 60f, 60f, paint
+                )
+
+                paint.textSize = spToPx((this.w * 0.014f))
+                paint.color = Color.WHITE
+                canvas!!.drawText(
+                    "LOADING...",
+                    (w * 0.36f),
+                    h * 0.48f,
+                    paint
+                )
+
+
+                preload += 20
+            }
+
+            if (btm.liberar > 3) {
+                index = 1
+                btm.liberar = 0
+                compraBT.y = h * 0.06f
+                compraBT.x = w * 0.78f
+                gameState = GameState.PLAYING
+                gameStateAUX = gameState
+            }
+
+
+            ///////////////////////////////////////////
+
+
+        } catch (ew: Exception) {
+            ew.stackTrace
+        }
+
+
+    }
+    if (cLocked) {
+        surfaceHolder.unlockCanvasAndPost(canvas)
+        cLocked = false
+    }
+}
+
+private fun render() {
+
+    if (!cLocked) {
+        canvas = this.surfaceHolder.lockCanvas()
+        cLocked = true
+    }
+
+}
+
+private fun handleInput() {
+
+}
+
+private fun init() {
+    carro.screenHeight = h
+    carro.iniciarRodas()
+
+    carroRival.screenHeight = h
+    carroRival.iniciarRodas()
+
+    var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb)
+    var n = Bitmap.createScaledBitmap(
+        nx,
+        (w).toInt(),
+        (h).toInt(),
+        false
+    )
+
+
+    var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub)
+    var c = Bitmap.createScaledBitmap(
+        cx,
+        (w).toInt(),
+        (h).toInt(),
+        false
+    )
+    var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb)
+    var cxs = Bitmap.createScaledBitmap(
+        cxx,
+        (w).toInt(),
+
+        (h).toInt(),
+        false
+    )
+    trackRenderer.loadTrackSegments((w*2), h)
+
+    ceu.backgroundClouds = n
+  //  fundo.backgroundMountains = cxs
+
+    fundo.backgroundMountains = trackRenderer.trackSegments[0]
+
+   fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+
+    fundo.texturaBitmap = cxs
+    ceu.backgroundSky = c
+    fundo.mountainsX = 0f
+
+    fundo.mountainsX2 =    fundo.mountainsX + (fundo.backgroundMountains.width).toFloat()//+ 1800
+}
+
+private fun popularTiles() {
+    avaliar3 = false
+    ajustarY = true
+    pontos = 0
+
+    try {
+
+
+        val canvasB = Canvas(b3)
+        canvasB.drawColor(
+            Color.TRANSPARENT,
+            PorterDuff.Mode.CLEAR
+        )
+        paint.color = Color.BLACK
+        paint.alpha = 150
+
+
+        canvasB.drawRoundRect(
+            RectF(
+                (this.w * 0.08).toFloat(),
+                ((this.h * 0.75).toFloat() - (this.w * 0.03).toFloat()),
+                (this.w * 0.93).toFloat(),
+                ((this.h * 0.75)).toFloat() + (((this.w * 0.9 / 8).toInt()) * 1.22f)
+            ), 30f, 30f, paint
+        )
+        paint.color = Color.BLUE
+        paint.alpha = 150
+
+        canvasB.drawRoundRect(
+            RectF(
+                (this.w * 0.09).toFloat(),
+                ((this.h * 0.75).toFloat() - (this.w * 0.02).toFloat()),
+                (this.w * 0.92).toFloat(),
+                ((this.h * 0.75).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.15f)
+            ), 30f, 30f, paint
+        )
+        paint.color = Color.GREEN
+        paint.alpha = 150
+
+        canvasB.drawRoundRect(
+            RectF(
+                (this.w * 0.09).toFloat(),
+                ((this.h * 0.755).toFloat() - (this.w * 0.02).toFloat()),
+                (this.w * 0.92).toFloat(),
+                ((this.h * 0.755).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.0f)
+            ), 30f, 30f, paint
+        )
+        paint.color = Color.BLACK
+        paint.alpha = 255
+
+    } catch (ett: Exception) {
+        ett.stackTrace
+    }
+
+
+    val bd = BDSky(context)
+    ultimaFase = bd.buscar().nivel
+
+
+    val base = bd.buscar()
+
+    luzP = base.luz
+    imaP = base.ima
+    sufleP = base.sufle
+    score = bd.buscar().pontos.toInt()
+
+    fase = ultimaFase
+
+
+
+    walld.shuffle()
+
+}
+
+
+private fun onTocarEfeito(i: Int) {
+    val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    coroutineScope.launch {
+
+        if (i == 0) {
+            if (!efeitoSonoro.isPlaying) {
+                efeitoSonoro.setVolume(0.2f, 0.2f)
+                efeitoSonoro.seekTo(0)
+                efeitoSonoro.start()
+            } else {
+                efeitoSonoro.pause()
+                efeitoSonoro.setVolume(0.2f, 0.2f)
+                efeitoSonoro.seekTo(0)
+                efeitoSonoro.start()
+            }
+        } else if (i == 1) {
+            if (!efeitoSonoro2.isPlaying) {
+                efeitoSonoro2.setVolume(0.2f, 0.2f)
+                efeitoSonoro2.seekTo(0)
+                efeitoSonoro2.start()
+            } else {
+                efeitoSonoro2.pause()
+                efeitoSonoro2.setVolume(0.2f, 0.2f)
+                efeitoSonoro2.seekTo(0)
+                efeitoSonoro2.start()
+            }
+        }
+
+
+    }
+}
+
+
+fun onTouchEvent(event: MotionEvent): Boolean {
+
+    if (gameState == GameState.PLAYING) {
+
+        if (event.action == MotionEvent.ACTION_DOWN && event.x > w * 0.8f) {
+            selecao.sair = false
+            gameState = GameState.SELECAO
+        } else {
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Inicia a ação quando o toque começa
+                    isTouching = true
+                    carro.applyLift()  // Faz o avião subir quando pressionado
+                    carro.parou = false
+                    fundo.reduzindo = false
+                    carroRival.inicio=true
+                    carroRival.parou=false
+                    fundo.mountainsSpeed += 2f
+                    return true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    // Mantém a ação enquanto o dedo estiver se movendo na tela
+                    if (isTouching) {
+                        // player.applyLift()  // Continua fazendo o avião subir
+                        carro.applyLift()
+                        fundo.reduzindo = false
+                        carro.rodaF.reduzindo = false
+                        carro.rodaT.reduzindo = false
+                        carro.parou = false
+                        //  carro.reduzindo = false
+                        fundo.mountainsSpeed += 2f
+                    }
+                    return true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    if (gameouver) {
+                        gameouver = false
+                        fundo.distancia = 0
+
+                        fundo.mountainsX = 0f
+
+                        fundo.mountainsX2 = 0f //+ 1800
+                    }
+
+                    fundo.reduzindo = true
+                    carro.reduzindo = true
+                    isTouching = false
+                    return true
+                }
+
+                else -> return false
+            }
+        }
+
+
+    } else {
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> handleTouch(event)
+        }
+    }
+    return true
+}
+
+private fun handleTouch(event: MotionEvent) {
+    when (gameState) {
+        GameState.MENU -> {
+            if (compraBT.containsTouch(
+                    event.x,
+                    event.y
+                )
+            ) {
+                gameStateAUX = gameState
+                gameState = GameState.SHOP
+                lojaWAO.moedas = -2
+                lojaWAO.abrirLoja = true
+
+
+            } else if (noADS.containsTouch(
+                    event.x,
+                    event.y
+                ) && !semanuncio
+            ) {
+
+                gameView.comprar("remove_ads")
+
+
+            }
+
+            if (btm.containsTouch(
+                    event.x,
+                    event.y
+                )
+            ) {
+
+                gameStateAUX = gameState
+                selecao.sair = false
+                gameState = GameState.SELECAO
+
+                // gameState = GameState.PLAYING
+
+            }
+        }
+
+        GameState.GAME_OVER -> {
+
+        }
+
+        GameState.SHOP -> {
+
+            lojaWAO.onTouchEvent(event)
+        }
+
+        GameState.SELECAO -> {
+
+            if (!selecao.sair) {
+                selecao.onTouchEvent(event)
+                if (selecao.sair) {
+                    carro.bitmap = selecao.listaMonters[selecao.index]
+                    carro.rodaF.bitmap = selecao.getRoda()
+                    carro.rodaT.bitmap = selecao.getRoda()
+                    gameState = GameState.PLAYING
+                }
+
+            } else {
+                carro.bitmap = selecao.listaMonters[selecao.index]
+                carro.rodaF.bitmap = selecao.getRoda()
+                carro.rodaT.bitmap = selecao.getRoda()
+                gameState = GameState.PLAYING
+
+            }
+
+
+        }
+
+        else -> {}
+    }
+}
+
+
+private fun Float.toDp(resources: Resources): Float {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this,
+        resources.displayMetrics
+    )
+}
+
+
+private fun spToPx(sp: Float): Float {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_SP,
+        sp,
+        context.resources.displayMetrics
+    )
+}
+
+}
+
 enum class GameState {
-    MENU, PLAYING, GAME_OVER, SHOP,SELECAO
+    MENU, PLAYING, GAME_OVER, SHOP, SELECAO
 }
