@@ -162,7 +162,7 @@ class Carro(context: Context) {
             colidiu(roda)
 
         } else {
-            roda.gravity = 4.0f
+            roda.gravity = 3.0f
 
         }
 
@@ -216,7 +216,7 @@ class Carro(context: Context) {
             colidiu(roda,fundo)
         }
         else {
-            roda.gravity = 4.0f
+            roda.gravity = 3.0f
 
         }
 

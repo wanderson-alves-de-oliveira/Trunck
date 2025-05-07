@@ -178,8 +178,8 @@ ajustDraw()
             rodaF.y = 50f
 
         }else{
-            rodaT.gravity = 4.0f
-            rodaF.gravity = 4.0f
+            rodaT.gravity = 3.0f
+            rodaF.gravity = 3.0f
         }
 
 
@@ -219,7 +219,7 @@ ajustDraw()
             colidiu(roda)
 
         } else {
-            roda.gravity = 4.0f
+            roda.gravity = 3.0f
 
         }
 
@@ -266,7 +266,7 @@ ajustDraw()
             colidiu(roda)
         }
         else {
-            roda.gravity = 4.0f
+            roda.gravity = 3.0f
 
         }
 

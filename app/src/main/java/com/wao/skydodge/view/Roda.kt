@@ -17,7 +17,7 @@ class Roda(context: Context) {
     private var speed = 20f
     var velocidadedoGiro = 0f
     var velocityY = 0f  // Velocidade vertical (gravidade)
-    var gravity = 4.0f  // Constante de gravidade
+    var gravity = 3.0f  // Constante de gravidade
     private var lift = -25f
     // Levantamento para impulsionar para cima
     val options = BitmapFactory.Options().apply {
@@ -43,7 +43,7 @@ class Roda(context: Context) {
     // Método chamado para aplicar o impulso para cima
     fun applyLift() {
         velocityY = lift
-        gravity = 4.0f
+        gravity = 3.0f
         //giroUP()
     }
 
