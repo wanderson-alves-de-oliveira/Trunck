@@ -81,7 +81,7 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     init {
 
         carro.rotacao = 0f
-        carro.rodaT.x = (w / 2) + carro.largura / 2
+        carro.rodaT.x = (w / 2) + carro.largura
         carro.estacionado = true
         carro.rodaT.y = (h * 0.4f)
         carro.rodaF.y = (h * 0.5f)

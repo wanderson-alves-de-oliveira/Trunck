@@ -30,22 +30,22 @@ class Carro(context: Context) {
  var estacionado = false
     var rotacao = 0f
     var largura = 0f
-    var altura = 150f
+    var altura = 112.5f
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565
     }
     var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options)
-    var alturaY = 150f
+    var alturaY = 112.5f
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
 
     init {
         rodaF.x = 800f
-        rodaT.x = 600f
+        rodaT.x = 650f
 
-         largura = rodaT.x - (rodaF.x+(rodaT.largura*1.05f))
-         altura = 150f
+         largura = (rodaT.x - (rodaF.x+(rodaT.largura*1.05f))).toFloat()
+         altura = 112.5f
 
 
 
@@ -90,17 +90,13 @@ class Carro(context: Context) {
 
         verirficarColisao(fundo,offset, rodaF)
         verirficarColisao(fundo,offset, rodaT)
-        centerX = (rodaT.x + rodaF.x) / 2
-        centerY = (rodaT.y + rodaF.y) / 2
-        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
-        alturaY = pontoChassiTras.y
+        ajustDraw()
 
     }
 
     fun update(fundo: Fundo) {
         if(rodaF.x<rodaT.x){
-            rodaF.x = rodaT.x+200
+            rodaF.x = rodaT.x+150
         }
    rodaF.update()
         rodaT.update()
@@ -128,11 +124,7 @@ class Carro(context: Context) {
 
         verirficarColisao(fundo, rodaF)
         verirficarColisao(fundo, rodaT)
-        centerX = (rodaT.x + rodaF.x) / 2
-        centerY = (rodaT.y + rodaF.y) / 2
-        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
-        alturaY = pontoChassiTras.y
+        ajustDraw()
 
     }
 
@@ -170,13 +162,20 @@ class Carro(context: Context) {
             colidiu(roda)
 
         } else {
-            roda.gravity = 3.0f
+            roda.gravity = 4.0f
 
         }
 
     }
 
+    private fun ajustDraw(){
 
+        centerX = (rodaT.x + rodaF.x) / 2
+        centerY = (rodaT.y + rodaF.y) / 2
+        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.02f), centerY-(altura/1.9f), 60f, 30f, rotacao *0.16f)
+        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.875f), -60f, 30f, rotacao *0.2f)
+        alturaY = pontoChassiTras.y
+    }
     fun verirficarColisao(fundo: Fundo, roda: Roda) {
 
 
@@ -217,7 +216,7 @@ class Carro(context: Context) {
             colidiu(roda,fundo)
         }
         else {
-            roda.gravity = 3.0f
+            roda.gravity = 4.0f
 
         }
 
@@ -227,7 +226,7 @@ class Carro(context: Context) {
 
         val terrainY = colisao.ultimoY
         if (roda.y + roda.altura > terrainY ) {
-            roda.y = terrainY - (roda.altura*0.8f)
+            roda.y = (terrainY - (roda.altura*0.8f)).toFloat()
             roda.gravity = 0f
             roda.velocityY = 0f
         }
@@ -252,20 +251,20 @@ class Carro(context: Context) {
        if(rotacao*-1<=50) {
 
            canvas.save()
-           canvas.rotate(rotacao * -1, centerX, centerY)
+           canvas.rotate(rotacao * -0.2f, centerX, centerY)
            canvas.drawLine(
                pontoChassiTras.x,
                pontoChassiTras.y,
-               rodaT.x + (rodaT.largura * 0.5f),
-               rodaT.y + (rodaT.largura * 0.5f),
+               (rodaT.x + (rodaT.largura * 0.5f)).toFloat(),
+               (rodaT.y + (rodaT.largura * 0.5f)).toFloat(),
                paintAmortecedor
            )
 
            canvas.drawLine(
                pontoChassiFrente.x,
                pontoChassiFrente.y,
-               rodaF.x + (rodaT.largura * 0.5f),
-               rodaF.y + (rodaT.largura * 0.5f),
+               (rodaF.x + (rodaT.largura * 0.5f)).toFloat(),
+               (rodaF.y + (rodaT.largura * 0.5f)).toFloat(),
                paintAmortecedor
            )
            rodaT.draw(canvas)
@@ -279,7 +278,7 @@ class Carro(context: Context) {
 
 
         canvas.save()
-        canvas.rotate(rotacao*-1.8f, centerX, centerY)
+        canvas.rotate(rotacao*-1.0f, centerX, centerY)
 
         canvas.drawBitmap(bitmap, rodaT.x, centerY-(altura*0.8f), null)
 

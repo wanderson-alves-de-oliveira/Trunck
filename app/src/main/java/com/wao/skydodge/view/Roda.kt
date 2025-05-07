@@ -11,13 +11,13 @@ class Roda(context: Context) {
     var reduzindo = false
     var x =500f
     var y = 250f
-    var largura = 150
-    var altura = 150
+    var largura = 112.5
+    var altura = 112.5
      var giro = 0f
     private var speed = 20f
     var velocidadedoGiro = 0f
     var velocityY = 0f  // Velocidade vertical (gravidade)
-    var gravity = 3.0f  // Constante de gravidade
+    var gravity = 4.0f  // Constante de gravidade
     private var lift = -25f
     // Levantamento para impulsionar para cima
     val options = BitmapFactory.Options().apply {
@@ -26,15 +26,15 @@ class Roda(context: Context) {
     private var bitmapx: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.rodac,options)
     var bitmap = Bitmap.createScaledBitmap(
     bitmapx,
-    (200).toInt(),
-    (150).toInt(),
+    (112.5).toInt(),
+    (112.5).toInt(),
     false
     )
     var screenHeight =0
 
     init {
         // Redimensiona a imagem do avião para o tamanho padrão
-        bitmap = resizeBitmap(bitmap, 150, 150)
+        bitmap = resizeBitmap(bitmap, (112.5).toInt(), (112.5).toInt())
 
     }
 
@@ -43,7 +43,7 @@ class Roda(context: Context) {
     // Método chamado para aplicar o impulso para cima
     fun applyLift() {
         velocityY = lift
-        gravity = 3.0f
+        gravity = 4.0f
         //giroUP()
     }
 

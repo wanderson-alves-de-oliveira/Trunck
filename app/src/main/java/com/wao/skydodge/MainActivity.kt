@@ -101,7 +101,10 @@ class MainActivity : Activity() {
 
         setContentView(layout)
     }
-
+    override fun onDestroy() {
+        super.onDestroy()
+        gameView?.destroy()
+    }
     private fun setupBillingClient() {
         billingClient = BillingClient.newBuilder(this)
             .enablePendingPurchases()

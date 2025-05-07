@@ -2,7 +2,7 @@ package com.wao.skydodge.view
 
 import android.content.Context
 import android.graphics.Bitmap
- import android.graphics.Canvas
+import android.graphics.Canvas
 
 import com.wao.skydodge.pistas.TrackRenderer
 
@@ -13,7 +13,7 @@ class Fundo(val context: Context) {
     var mountainsXR = 0f
 
     var mountainsY = 0f
-     var mountainsSpeed = 0f
+    var mountainsSpeed = 0f
     var reduzindo = false
     var distancia = 0
     var index2 = 1
@@ -24,7 +24,7 @@ class Fundo(val context: Context) {
     val trackRenderer = TrackRenderer(context)
 
     var mountainsX2 = 0f
-     fun update(trackRenderer: TrackRenderer) {
+    fun update(trackRenderer: TrackRenderer) {
 
 
 // No método de atualização:
@@ -36,8 +36,8 @@ class Fundo(val context: Context) {
                 mountainsSpeed = 0f
                 reduzindo = false
             }
-        } else if (mountainsSpeed > 140) {
-            mountainsSpeed = 140f
+        } else if (mountainsSpeed > 90) {
+            mountainsSpeed = 90f
 
         }
 
@@ -45,7 +45,7 @@ class Fundo(val context: Context) {
 
         mountainsX -= mountainsSpeed
         mountainsX2 -= mountainsSpeed
-        mountainsXR  -= mountainsSpeed
+        mountainsXR -= mountainsSpeed
 
         trackRenderer.updateScroll(mountainsX)
 
@@ -53,8 +53,8 @@ class Fundo(val context: Context) {
 
         if (mountainsX <= -(backgroundMountains.width)) {
             //   backgroundMountains = gerarBitmapOnduladoComTextura(context,(backgroundMountains.width).toInt(),backgroundMountains.height,texturaBitmap)
-index+=2
-            if(index>12){
+            index += 2
+            if (index > 12) {
                 index = 0
             }
             backgroundMountains = trackRenderer.trackSegments[index]
@@ -65,8 +65,8 @@ index+=2
         }
 
         if (mountainsX2 <= -(backgroundMountains2.width)) {
-            index2+=2
-            if(index2>11){
+            index2 += 2
+            if (index2 > 11) {
                 index2 = 1
             }
             backgroundMountains2 = trackRenderer.trackSegments[index2]
@@ -93,9 +93,6 @@ index+=2
 
         // ... desenha o restante do jogo
     }
-
-
-
 
 
 }

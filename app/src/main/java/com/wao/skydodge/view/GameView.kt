@@ -28,7 +28,7 @@ import com.wao.skydodge.egine.GameLoop
 import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.ferramentas.BillingManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.Dispatchers
 
 @SuppressLint("ViewConstructor")
 @Suppress("DEPRECATION")
@@ -265,6 +265,8 @@ class GameView(
         gameLoop.score = base.pontos.toInt()
         // prefs.edit().putInt("moedas", base.pontos.toInt() ).apply()
     }
-
-
+    fun destroy() {
+       gameLoop.stopLoop()
+        // Libere bitmaps, sons, etc., se necessário
+    }
 }

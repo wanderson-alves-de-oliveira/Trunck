@@ -227,31 +227,25 @@ class GameLoop(
 
 
 
-                  //  trackRenderer.updateScroll(fundo.mountainsSpeed)
-                   // fundo.backgroundMountains = trackRenderer.draw(canvas!!)
 
                     fundo.update(trackRenderer)
 
-                corrotina.launch {
+
 
                     carroRival.update(fundo)
 
 
-                }
-
-                corrotina.launch {
 
                     carroRival1.update(fundo)
 
 
-                }
 
-                corrotina.launch {
+
 
                     carroRival2.update(fundo)
 
 
-                }
+
 
 
                     if (fundo.mountainsSpeed > 1) {
@@ -414,36 +408,42 @@ fun updateCameraOffset(carY: Float) {
     cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
 }
 
-private fun drawGame(canvas: Canvas?) {
-    canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
-    ceu.draw(canvas!!)
-    canvas.save()
-    canvas.translate(0f, cameraOffsetY)
+private fun drawGame(cam: Canvas?) {
+   // canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+    canvas = cam
+
+        ceu.draw(canvas!!)
 
 
 
-   fundo.draw(canvas)
+    canvas?.save()
+    canvas?.translate(0f, cameraOffsetY)
+
+
+
+    canvas?.let { fundo.draw(it) }
    // trackRenderer.draw(canvas)
 
 
-        carroRival.draw(canvas)
+    canvas?.let { carroRival.draw(it) }
 
-        carroRival1.draw(canvas)
+    canvas?.let { carroRival1.draw(it) }
 
-        carroRival2.draw(canvas)
-    carro.draw(canvas)
-     canvas.restore()
+    canvas?.let { carroRival2.draw(it) }
+
+    canvas?.let { carro.draw(it) }
+    canvas?.restore()
 
 
 
     if (gameouver) {
         paint.textSize = spToPx((this.w * 0.05f))
-        canvas.drawText("FIM DE JOGO", 100f, 790f, paint)
+        canvas?.drawText("FIM DE JOGO", 100f, 790f, paint)
     } else {
 
         paint.textSize = spToPx((this.w * 0.01f))
-        canvas.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
-        canvas.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
+        canvas?.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
+        canvas?.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
 
     }
 
@@ -627,13 +627,13 @@ private fun init() {
 
 
     carroRival.f = 1800f
-    carroRival.t = 1600f
+    carroRival.t = 1650f
 
     carroRival1.f = 2800f
-    carroRival1.t = 2600f
+    carroRival1.t = 2650f
 
     carroRival2.f = 3800f
-    carroRival2.t = 3600f
+    carroRival2.t = 3650f
 
 
 
@@ -669,7 +669,7 @@ private fun init() {
         (h).toInt(),
         false
     )
-    trackRenderer.loadTrackSegments((w*2), h)
+    trackRenderer.loadTrackSegments(((w*1.5f).toInt()), h)
 
     ceu.backgroundClouds = n
   //  fundo.backgroundMountains = cxs
@@ -834,7 +834,7 @@ fun onTouchEvent(event: MotionEvent): Boolean {
                         carro.rodaT.reduzindo = false
                         carro.parou = false
                         //  carro.reduzindo = false
-                        fundo.mountainsSpeed += 2f
+                        fundo.mountainsSpeed += 1f
                     }
                     return true
                 }
