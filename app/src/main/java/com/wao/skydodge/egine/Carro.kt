@@ -31,7 +31,10 @@ class Carro(context: Context) {
     var rotacao = 0f
     var largura = 0f
     var altura = 150f
-    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia)
+    val options = BitmapFactory.Options().apply {
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
+    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options)
     var alturaY = 150f
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
@@ -61,9 +64,16 @@ class Carro(context: Context) {
         rodaF.screenHeight
         rodaT.screenHeight
     }
-    fun update(fundo: Bitmap,offset : Offset) {
+    var centerX = (rodaT.x + rodaF.x) / 2
+    var centerY = (rodaT.y + rodaF.y) / 2
+    var    pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+    var    pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
 
-        rodaF.update()
+    fun update(fundo: Bitmap,offset : Offset) {
+        if(rodaF.x<rodaT.x){
+            rodaF.x = rodaT.x+200
+        }
+    rodaF.update()
         rodaT.update()
         if(reduzindo){
 
@@ -80,11 +90,19 @@ class Carro(context: Context) {
 
         verirficarColisao(fundo,offset, rodaF)
         verirficarColisao(fundo,offset, rodaT)
+        centerX = (rodaT.x + rodaF.x) / 2
+        centerY = (rodaT.y + rodaF.y) / 2
+        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
+        alturaY = pontoChassiTras.y
 
     }
-    fun update(fundo: Fundo) {
 
-        rodaF.update()
+    fun update(fundo: Fundo) {
+        if(rodaF.x<rodaT.x){
+            rodaF.x = rodaT.x+200
+        }
+   rodaF.update()
         rodaT.update()
         if(reduzindo){
 
@@ -110,6 +128,11 @@ class Carro(context: Context) {
 
         verirficarColisao(fundo, rodaF)
         verirficarColisao(fundo, rodaT)
+        centerX = (rodaT.x + rodaF.x) / 2
+        centerY = (rodaT.y + rodaF.y) / 2
+        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
+        alturaY = pontoChassiTras.y
 
     }
 
@@ -218,28 +241,13 @@ class Carro(context: Context) {
         val y = carroY + offsetX * sin(rad) + offsetY * cos(rad)
         return PointF(x.toFloat(), y.toFloat())
     }
-
+    val paintAmortecedor = Paint().apply {
+        color = Color.DKGRAY
+        strokeWidth = 30f
+        style = Paint.Style.STROKE
+    }
     fun draw(canvas: Canvas) {
 
-        if(rodaF.x<rodaT.x){
-            rodaF.x = rodaT.x+200
-        }
-        val paintAmortecedor = Paint().apply {
-            color = Color.DKGRAY
-            strokeWidth = 30f
-            style = Paint.Style.STROKE
-        }
-
-// Desenha amortecedor traseiro
-
-
-
-        // Chassi
-        val centerX = (rodaT.x + rodaF.x) / 2
-        val centerY = (rodaT.y + rodaF.y) / 2
-       val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-       val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
-        alturaY = pontoChassiTras.y
 
        if(rotacao*-1<=50) {
 

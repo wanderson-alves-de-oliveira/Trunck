@@ -30,8 +30,11 @@ var animar = false
 var xFix = x
     fun draw(canvas: Canvas ) {
          paint.textSize = spToPx(w*0.04f)
+        val options = BitmapFactory.Options().apply {
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
        val b: Bitmap = Bitmap.createBitmap(w,h, Bitmap.Config.ARGB_8888)
-        val coin = BitmapFactory.decodeResource(contexte.resources, R.drawable.moeda)
+        val coin = BitmapFactory.decodeResource(contexte.resources, R.drawable.moeda,options)
         val coinP = Bitmap.createScaledBitmap(
             coin,
             ((w * 0.1f)).toInt(),
@@ -39,7 +42,7 @@ var xFix = x
             false
         )
 
-        val vid = BitmapFactory.decodeResource(contexte.resources, R.drawable.ad)
+        val vid = BitmapFactory.decodeResource(contexte.resources, R.drawable.ad,options)
         val videP = Bitmap.createScaledBitmap(
             vid,
             ((w * 0.25f)).toInt(),

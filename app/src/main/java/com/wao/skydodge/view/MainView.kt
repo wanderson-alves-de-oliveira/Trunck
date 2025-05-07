@@ -47,7 +47,10 @@ class MainView(   var context: Context,
             w * 0.06f
 
         }
-        val tileImage = BitmapFactory.decodeResource(context.resources, R.drawable.titulo)
+        val options = BitmapFactory.Options().apply {
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+        val tileImage = BitmapFactory.decodeResource(context.resources, R.drawable.titulo,options)
         val img = Bitmap.createScaledBitmap(
             tileImage
         ,
@@ -57,7 +60,7 @@ class MainView(   var context: Context,
         )
         val x: Float = ((w/2)-(img.width/2)).toFloat()
 
-        val main = BitmapFactory.decodeResource(context.resources, R.drawable.main)
+        val main = BitmapFactory.decodeResource(context.resources, R.drawable.main,options)
         val mainp = Bitmap.createScaledBitmap(
             main
             ,

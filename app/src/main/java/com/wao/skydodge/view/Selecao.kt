@@ -23,15 +23,17 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     var indexP = 0
     var selectPneu = false
 
-
-    var fundo: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.base)
-    var oficina: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.fundooficina)
-    var esquerda: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btl)
-    var direita: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btr)
-    var start: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.start)
-    var pneu: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pneu)
-    var truck: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck)
-    var loja: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.loja)
+    val options = BitmapFactory.Options().apply {
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
+    var fundo: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.base,options)
+    var oficina: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.fundooficina,options)
+    var esquerda: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btl,options)
+    var direita: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.btr,options)
+    var start: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.start,options)
+    var pneu: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pneu,options)
+    var truck: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck,options)
+    var loja: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.loja,options)
 
 
     var btmL = BotaoBitmap(
@@ -86,7 +88,7 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
         carregarlita()
 
 
-        var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.nuven)
+        var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.nuven,options)
         var n = Bitmap.createScaledBitmap(
             nx,
             (w).toInt(),
@@ -142,24 +144,24 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
 
     private fun carregarlita() {
 
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassia))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassib))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassic))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassid))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassie))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassif))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassig))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassih))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassii))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassij))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassik))
-        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassil))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassib,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassic,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassid,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassie,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassif,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassig,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassih,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassii,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassij,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassik,options))
+        inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassil,options))
         //  inserirIMG(BitmapFactory.decodeResource(context.resources, R.drawable.chassim))
 
-        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodac))
-        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodab))
-        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodaa))
-        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodad))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodac,options))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodab,options))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodaa,options))
+        inserirIMGRoda(BitmapFactory.decodeResource(context.resources, R.drawable.rodad,options))
 
     }
     fun getRoda() : Bitmap{

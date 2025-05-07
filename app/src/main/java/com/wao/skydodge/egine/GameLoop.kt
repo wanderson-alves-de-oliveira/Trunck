@@ -69,6 +69,10 @@ class GameLoop(
     private var venceu = false
      private var carro = Carro(context)
     private var carroRival = CarroRival(context)
+    private var carroRival1 = CarroRival(context)
+    private var carroRival2 = CarroRival(context)
+
+
     private var fundo = Fundo(context)
     private var ceu = Ceu(context)
     private var gameouver = false
@@ -78,11 +82,13 @@ class GameLoop(
 
     var index = 0
     private var cLocked = false
+    val options = BitmapFactory.Options().apply {
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
+    private var carrinho = BitmapFactory.decodeResource(context.resources, R.drawable.carrinho,options)
+    private var noadsP = BitmapFactory.decodeResource(context.resources, R.drawable.noads,options)
 
-    private var carrinho = BitmapFactory.decodeResource(context.resources, R.drawable.carrinho)
-    private var noadsP = BitmapFactory.decodeResource(context.resources, R.drawable.noads)
-
-    private var coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda)
+    private var coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda,options)
     private val coinP = Bitmap.createScaledBitmap(
         coin,
         ((w * 0.1f)).toInt(),
@@ -114,9 +120,9 @@ class GameLoop(
         2000
 
     )
-    private var lampada = BitmapFactory.decodeResource(context.resources, R.drawable.lampada)
-    private var ima = BitmapFactory.decodeResource(context.resources, R.drawable.ima)
-    private var giro = BitmapFactory.decodeResource(context.resources, R.drawable.giro)
+    private var lampada = BitmapFactory.decodeResource(context.resources, R.drawable.lampada,options)
+    private var ima = BitmapFactory.decodeResource(context.resources, R.drawable.ima,options)
+    private var giro = BitmapFactory.decodeResource(context.resources, R.drawable.giro,options)
     private val b: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 
     private var main = MainView(this.context, (w * 1.1f).toInt(), (h * 1.1f).toInt())
@@ -145,8 +151,11 @@ class GameLoop(
     private var sufleP = 0
     private val colisao = Colisao()
     private val colisao2 = Colisao()
+    private val colisao3 = Colisao()
+    private val colisao4 = Colisao()
+    private val colisao5 = Colisao()
     private var ultimaFase = 0
-
+    private val corrotina: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private var btm = BotaoM(
         this.context,
         ((this.w * 0.9 / 4) * (1)).toFloat(),
@@ -207,13 +216,13 @@ class GameLoop(
 
             if (!gameouver) {
 
-                    carro.colisao = colisao
+
                     carro.update(fundo)
                     updateCameraOffset(carro.rodaT.y)
 
 
 
-                    carroRival.colisao = colisao2
+
 
 
 
@@ -222,14 +231,27 @@ class GameLoop(
                    // fundo.backgroundMountains = trackRenderer.draw(canvas!!)
 
                     fundo.update(trackRenderer)
-//                    if(carroRival.rodaT.x<0 || carroRival.rodaT.x>w){
-//                        carroRival.rodaT.gravity = 0f
-//                        carroRival.rodaF.gravity = 0f
-//                    }else{
-//                        carroRival.rodaT.gravity = 3f
-//                        carroRival.rodaF.gravity = 3f
-//                    }
+
+                corrotina.launch {
+
                     carroRival.update(fundo)
+
+
+                }
+
+                corrotina.launch {
+
+                    carroRival1.update(fundo)
+
+
+                }
+
+                corrotina.launch {
+
+                    carroRival2.update(fundo)
+
+
+                }
 
 
                     if (fundo.mountainsSpeed > 1) {
@@ -402,9 +424,15 @@ private fun drawGame(canvas: Canvas?) {
 
    fundo.draw(canvas)
    // trackRenderer.draw(canvas)
+
+
+        carroRival.draw(canvas)
+
+        carroRival1.draw(canvas)
+
+        carroRival2.draw(canvas)
     carro.draw(canvas)
-    carroRival.draw(canvas)
-    canvas.restore()
+     canvas.restore()
 
 
 
@@ -414,7 +442,7 @@ private fun drawGame(canvas: Canvas?) {
     } else {
 
         paint.textSize = spToPx((this.w * 0.01f))
-        canvas.drawText("Nivel ${(fundo.mountainsSpeed - 15).toInt()}", 100f, 290f, paint)
+        canvas.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
         canvas.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
 
     }
@@ -427,7 +455,29 @@ private fun drawGame(canvas: Canvas?) {
 
 }
 
-private fun drawGameOver(canvas: Canvas?) {
+    private fun verificarPos():Int {
+        var pos :MutableList<CarroRival> = mutableListOf()
+
+         pos.add(carroRival)
+        pos.add(carroRival1 )
+        pos.add(carroRival2)
+
+        pos.sortedBy { it.rodaT.x }
+
+        var posx = pos.filter { it.rodaT.x>carro.rodaT.x }
+
+        var p = 0
+        when(posx.size){
+            0->p=1
+            1->p=2
+            2->p=3
+            3->p=4
+
+        }
+return p
+    }
+
+    private fun drawGameOver(canvas: Canvas?) {
     TODO("Not yet implemented")
 }
 
@@ -567,7 +617,35 @@ private fun init() {
     carroRival.screenHeight = h
     carroRival.iniciarRodas()
 
-    var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb)
+    carroRival1.screenHeight = h
+    carroRival1.iniciarRodas()
+
+
+    carroRival2.screenHeight = h
+    carroRival2.iniciarRodas()
+
+
+
+    carroRival.f = 1800f
+    carroRival.t = 1600f
+
+    carroRival1.f = 2800f
+    carroRival1.t = 2600f
+
+    carroRival2.f = 3800f
+    carroRival2.t = 3600f
+
+
+
+    carroRival.bitmap = selecao.listaMonters[2]
+    carroRival1.bitmap = selecao.listaMonters[3]
+    carroRival2.bitmap = selecao.listaMonters[4]
+
+    carro.colisao = colisao
+    carroRival.colisao = colisao2
+    carroRival1.colisao = colisao3
+    carroRival2.colisao = colisao4
+    var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb,options)
     var n = Bitmap.createScaledBitmap(
         nx,
         (w).toInt(),
@@ -576,14 +654,14 @@ private fun init() {
     )
 
 
-    var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub)
+    var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub,options)
     var c = Bitmap.createScaledBitmap(
         cx,
         (w).toInt(),
         (h).toInt(),
         false
     )
-    var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb)
+    var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb,options)
     var cxs = Bitmap.createScaledBitmap(
         cxx,
         (w).toInt(),
@@ -605,6 +683,10 @@ private fun init() {
     fundo.mountainsX = 0f
 
     fundo.mountainsX2 =    fundo.mountainsX + (fundo.backgroundMountains.width).toFloat()//+ 1800
+
+    carroRival.verificarPosiçãoPista(fundo)
+    carroRival1.verificarPosiçãoPista(fundo)
+    carroRival2.verificarPosiçãoPista(fundo)
 }
 
 private fun popularTiles() {
@@ -734,7 +816,11 @@ fun onTouchEvent(event: MotionEvent): Boolean {
                     fundo.reduzindo = false
                     carroRival.inicio=true
                     carroRival.parou=false
-                    fundo.mountainsSpeed += 2f
+                    carroRival1.inicio=true
+                    carroRival1.parou=false
+                    carroRival2.inicio=true
+                    carroRival2.parou=false
+                     fundo.mountainsSpeed += 2f
                     return true
                 }
 

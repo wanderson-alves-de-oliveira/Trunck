@@ -31,29 +31,28 @@ class CarroRival(context: Context) {
  var estacionado = false
    var  inicio = false
     var km = 0f
-    var velocidadeX = 0f
+    var velocidadeX = 70f
     var velocidadeR = 0f
     var rotacao = 0f
     var largura = 0f
     var altura = 150f
-    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia)
+    val options = BitmapFactory.Options().apply {
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
+    var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options)
     var alturaY = 150f
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
-   val  f= 800f
-    val t = 600f
+   var  f= 800f
+    var t = 600f
     init {
-        rodaF.x = 800f
-        rodaT.x = 600f
+        rodaF.x = f
+        rodaT.x = t
 
          largura = rodaT.x - (rodaF.x+(rodaT.largura*1.05f))
          altura = 150f
 
-
-
-
-      //  angle = atan2(deltaY, deltaX) // inclinação do terreno
          bitmap = Bitmap.createScaledBitmap(
             bitmap,
             (largura).toInt(),
@@ -73,10 +72,20 @@ fun moverX(vel : Float){
         rodaF.screenHeight
         rodaT.screenHeight
     }
+
+    var centerX = (rodaT.x + rodaF.x) / 2
+    var centerY = (rodaT.y + rodaF.y) / 2
+    var    pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+    var    pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
+
+
     fun update(fundo: Bitmap,offset : Offset) {
 
         rodaF.update()
         rodaT.update()
+        if(rodaF.x<rodaT.x){
+            rodaF.x = rodaT.x+200
+        }
 
         if(reduzindo){
 
@@ -93,12 +102,18 @@ fun moverX(vel : Float){
 
         verirficarColisao(fundo,offset, rodaF)
         verirficarColisao(fundo,offset, rodaT)
-
+ajustDraw()
     }
     fun update(fundo: Fundo) {
 
         if(inicio) {
-          verificarPosiçãoPista(fundo)
+            if(rodaF.x<rodaT.x){
+                rodaF.x = rodaT.x+200
+            }
+
+
+
+            verificarPosiçãoPista(fundo)
 
             if(reduzindoR){
                 if(velocidadeX>velocidadeR){
@@ -148,10 +163,10 @@ fun moverX(vel : Float){
 
         verirficarColisao(fundo, rodaF)
         verirficarColisao(fundo, rodaT)
-
+        ajustDraw()
     }
 
-    private fun verificarPosiçãoPista(fundo: Fundo) {
+      fun verificarPosiçãoPista(fundo: Fundo) {
 
         rodaF.x=fundo.mountainsXR+(f+km)
         rodaT.x=fundo.mountainsXR+(t+km)
@@ -268,34 +283,30 @@ fun moverX(vel : Float){
 
 
     }
+
+  private fun ajustDraw(){
+
+         centerX = (rodaT.x + rodaF.x) / 2
+         centerY = (rodaT.y + rodaF.y) / 2
+         pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
+          pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
+        alturaY = pontoChassiTras.y
+    }
     fun pontoNoChassi(carroX: Float, carroY: Float, offsetX: Float, offsetY: Float, angulo: Float): PointF {
         val rad = Math.toRadians(angulo.toDouble())
         val x = carroX + offsetX * cos(rad) - offsetY * sin(rad)
         val y = carroY + offsetX * sin(rad) + offsetY * cos(rad)
         return PointF(x.toFloat(), y.toFloat())
     }
-
+    val paintAmortecedor = Paint().apply {
+        color = Color.DKGRAY
+        strokeWidth = 30f
+        style = Paint.Style.STROKE
+    }
     fun draw(canvas: Canvas) {
 
-        if(rodaF.x<rodaT.x){
-            rodaF.x = rodaT.x+200
-        }
-        val paintAmortecedor = Paint().apply {
-            color = Color.DKGRAY
-            strokeWidth = 30f
-            style = Paint.Style.STROKE
-        }
-
-// Desenha amortecedor traseiro
 
 
-
-        // Chassi
-        val centerX = (rodaT.x + rodaF.x) / 2
-        val centerY = (rodaT.y + rodaF.y) / 2
-       val pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
-       val  pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
-        alturaY = pontoChassiTras.y
 
        if(rotacao*-1<=50) {
 

@@ -26,7 +26,9 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
 
     var abrirLoja = false
     var atualizar = false
-
+    val options = BitmapFactory.Options().apply {
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
     var wal = Bitmap.createScaledBitmap(
         BitmapFactory.decodeResource(
             context.resources,
@@ -35,7 +37,7 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
     )
 
     var moedas = -1
-    val coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda)
+    val coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda,options)
     val coinP = Bitmap.createScaledBitmap(
         coin,
         ((w * 0.08f)).toInt(),
@@ -43,28 +45,28 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
         false
     )
 
-    val coin5 = BitmapFactory.decodeResource(context.resources, R.drawable.coinscinco)
+    val coin5 = BitmapFactory.decodeResource(context.resources, R.drawable.coinscinco,options)
     val coin5P = Bitmap.createScaledBitmap(
         coin5,
         ((w * 0.08f)).toInt(),
         ((w * 0.08f)).toInt(),
         false
     )
-    val coin10 = BitmapFactory.decodeResource(context.resources, R.drawable.coinsdez)
+    val coin10 = BitmapFactory.decodeResource(context.resources, R.drawable.coinsdez,options)
     val coin10P = Bitmap.createScaledBitmap(
         coin10,
         ((w * 0.08f)).toInt(),
         ((w * 0.08f)).toInt(),
         false
     )
-    val noads = BitmapFactory.decodeResource(context.resources, R.drawable.noads)
+    val noads = BitmapFactory.decodeResource(context.resources, R.drawable.noads,options)
     val noadsP = Bitmap.createScaledBitmap(
         noads,
         ((w * 0.08f)).toInt(),
         ((w * 0.08f)).toInt(),
         false
     )
-    val imgluz = BitmapFactory.decodeResource(context.resources, R.drawable.lampada)
+    val imgluz = BitmapFactory.decodeResource(context.resources, R.drawable.lampada,options)
     val imgluzP = Bitmap.createScaledBitmap(
         imgluz,
         ((w * 0.08f)).toInt(),
@@ -72,7 +74,7 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
         false
     )
 
-    val imgima = BitmapFactory.decodeResource(context.resources, R.drawable.ima)
+    val imgima = BitmapFactory.decodeResource(context.resources, R.drawable.ima,options)
     val imgimaP = Bitmap.createScaledBitmap(
         imgima,
         ((w * 0.08f)).toInt(),
@@ -81,7 +83,7 @@ class Loja(val context: Context, val gameView: GameView, val w: Int, val h: Int)
     )
 
 
-    val imgisufle = BitmapFactory.decodeResource(context.resources, R.drawable.giro)
+    val imgisufle = BitmapFactory.decodeResource(context.resources, R.drawable.giro,options)
     val imgisufleP = Bitmap.createScaledBitmap(
         imgisufle,
         ((w * 0.08f)).toInt(),

@@ -76,8 +76,10 @@ class MahjongTile(
             false
         )
         if (naLista) {
-
-            val coin = BitmapFactory.decodeResource(context.resources, R.drawable.moedaprata)
+            val options = BitmapFactory.Options().apply {
+                inPreferredConfig = Bitmap.Config.RGB_565
+            }
+            val coin = BitmapFactory.decodeResource(context.resources, R.drawable.moedaprata,options )
             coinp = Bitmap.createScaledBitmap(
                 coin!!,
                 ((w * 0.9f) - espaco).toInt(),
