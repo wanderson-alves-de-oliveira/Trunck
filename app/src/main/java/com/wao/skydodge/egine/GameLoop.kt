@@ -20,8 +20,7 @@ import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.pistas.TrackRenderer
-import com.wao.skydodge.pistas.drawTrack
-import com.wao.skydodge.view.BotaoM
+ import com.wao.skydodge.view.BotaoM
 import com.wao.skydodge.view.Ceu
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.GameView
@@ -32,8 +31,7 @@ import com.wao.skydodge.view.Venceu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlin.math.max
+ import kotlin.math.max
 
 class GameLoop(
     private val surfaceHolder: SurfaceHolder,
@@ -48,7 +46,6 @@ class GameLoop(
     private var preload = 0
 
     private val optimalTime = 1_000_000_000 / targetFps
-    private var isTouched = false
 
     private val trackRenderer = TrackRenderer(context)
     private var avaliar3 = false
@@ -61,21 +58,16 @@ class GameLoop(
     private val display: DisplayMetrics = context.resources.displayMetrics
     private val h = display.heightPixels
     private val w = display.widthPixels
-    private val hp = 0
-    private val wp = 0
+
     var semanuncio = false
     private var ajustarY = true
-    private var bloquerBT = false
-    private var bloquerBT2 = false
-    private var embaralhando = false
+
     var pontos = 0
-    private var pontosCont = 0
 
     private val selecao = Selecao(context, w, h)
 
     private var venceu = false
-    private var falhou = false
-    private var carro = Carro(context)
+     private var carro = Carro(context)
     private var carroRival = CarroRival(context)
     private var fundo = Fundo(context)
     private var ceu = Ceu(context)
@@ -84,9 +76,6 @@ class GameLoop(
 
     private var fase = 0
 
-    private var time1 = 0
-    private var time2 = 0
-    private var time3 = 0
     var index = 0
     private var cLocked = false
 
@@ -138,22 +127,18 @@ class GameLoop(
     var semInternet = false
 
     private var credLuz = Venceu(this.context, (w), (h), 2)
-    private var credIma = Venceu(this.context, (w), (h), 3)
-    private var credSufle = Venceu(this.context, (w), (h), 4)
+
     private var premiar = false
 
 
-    private var objX = credLuz
-    private var timePress = 0
-    private var creditoRecorsus = false
+     private var timePress = 0
 
     //var b2: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     private val b3: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 
     private var pontuacaoNova = 0
     var score = 0
-    private var limitar = 7
-    private var valorminimo = 300
+     private var valorminimo = 300
 
     private var luzP = 0
     private var imaP = 0
@@ -173,41 +158,9 @@ class GameLoop(
     )
 
     var walld: MutableList<Bitmap> = mutableListOf()
-    var skyImages = mutableListOf<Bitmap>()
-    private val botao1 = MahjongTile(
-        lampada,
-        this.context,
-        (((w * 0.02f) + (w * 0.9f) / 6) * 1.5f),
-        h * 0.83f,
-        ((w * 0.8f) / 6).toInt(),
-        ((w * 0.9f) / 6).toInt(),
-        2,
-        5000
-    )
-    private val botao2 = MahjongTile(
-        ima,
-        this.context,
-        (((w * 0.02f) + (w * 0.9f) / 6) * 2.5f),
-        h * 0.83f,
-        ((w * 0.8f) / 6).toInt(),
-        ((w * 0.9f) / 6).toInt(),
-        2,
-        2000
 
-    )
-    private val botao3 = MahjongTile(
-        giro,
-        this.context,
-        (((w * 0.02f) + (w * 0.9f) / 6) * 3.5f),
-        h * 0.83f,
-        ((w * 0.8f) / 6).toInt(),
-        ((w * 0.9f) / 6).toInt(),
-        2,
-        3000
 
-    )
     private val ialimite: Int = 50
-    private var timeValidarIA = ialimite
 
     fun startLoop() {
         running = true
@@ -250,10 +203,10 @@ class GameLoop(
     private var canvas: Canvas? = null
     private fun update() {
 
-        runBlocking {
+
 
             if (!gameouver) {
-                launch(Dispatchers.Default) {
+
                     carro.colisao = colisao
                     carro.update(fundo)
                     updateCameraOffset(carro.rodaT.y)
@@ -263,8 +216,8 @@ class GameLoop(
                     carroRival.colisao = colisao2
 
 
-                }
-                launch(Dispatchers.Default) {
+
+
                   //  trackRenderer.updateScroll(fundo.mountainsSpeed)
                    // fundo.backgroundMountains = trackRenderer.draw(canvas!!)
 
@@ -284,18 +237,17 @@ class GameLoop(
                     } else {
                         ceu.corremdo = false
                     }
-                }
 
-                launch(Dispatchers.Default) {
+
                     ceu.update()
 
                     if (gameState == GameState.SELECAO) {
                         selecao.update()
                     }
-                }
+
             }
 
-        }
+
 
 
     draw()
@@ -304,13 +256,6 @@ class GameLoop(
 }
 
 
-private fun sleep() {
-    try {
-        Thread.sleep(17) // Aproximadamente 60 FPS
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
-}
 
 private fun adsr() {
     gameView.showRewardedAd(

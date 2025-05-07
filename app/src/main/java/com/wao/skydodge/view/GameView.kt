@@ -39,7 +39,6 @@ class GameView(
     SurfaceHolder.Callback {
     var gameLoop: GameLoop
     private var tiles = mutableListOf<MahjongTile>()
-    private var selectedTiles = mutableListOf<MahjongTile>()
     private var pontos = 0
     private var index = 0
     private var tutor = false

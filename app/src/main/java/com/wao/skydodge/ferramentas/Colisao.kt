@@ -1,5 +1,6 @@
 package com.wao.skydodge.ferramentas
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
@@ -7,8 +8,9 @@ import android.graphics.Rect
 class Colisao() {
 
     var ultimoY = 0f
-    var modo = ModoDeslise.P
-    fun colideComMapa(rect: Rect, mapa: Bitmap ,offsetX: Int,offsetY: Int): Boolean {
+   // var modo = ModoDeslise.P
+   @SuppressLint("SuspiciousIndentation")
+   fun colideComMapa(rect: Rect, mapa: Bitmap, offsetX: Int, offsetY: Int): Boolean {
         for (y in rect.top until rect.bottom) {
             for (x in rect.left until rect.right) {
                 var mapaX = x +( offsetX*-1)
@@ -18,7 +20,7 @@ class Colisao() {
                     if (mapaX in 0 until mapa.width && mapaY in 0 until mapa.height) {
                         if (Color.alpha(mapa.getPixel(mapaX, mapaY)) > 50) {
                             ultimoY=mapaY.toFloat()
-                            modo = detectarDirecaoDoTerreno(mapa, mapaX, mapaY)
+                          //  modo = detectarDirecaoDoTerreno(mapa, x, y)
                                 return true
 
                         }
@@ -37,8 +39,12 @@ class Colisao() {
         val alturaFrente = encontrarAlturaDoChao(bitmapColisao, x + 1, y)
 
         return when {
-            alturaFrente < alturaAtual ->  ModoDeslise.S
-            alturaFrente > alturaAtual ->   ModoDeslise.D
+            alturaFrente> alturaAtual+3  -> {
+                ModoDeslise.S
+            }
+            alturaFrente< alturaAtual+3 -> {
+                ModoDeslise.D
+            }
             else ->  ModoDeslise.P
         }
     }

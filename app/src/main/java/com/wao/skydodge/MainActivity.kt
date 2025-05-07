@@ -5,14 +5,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.TextView
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.QueryProductDetailsParams
 
- import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.wao.skydodge.ferramentas.BillingManager

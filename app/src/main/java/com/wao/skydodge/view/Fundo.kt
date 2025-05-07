@@ -2,29 +2,18 @@ package com.wao.skydodge.view
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.Shader
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+ import android.graphics.Canvas
+
 import com.wao.skydodge.pistas.TrackRenderer
-import com.wao.skydodge.pistas.drawTrack
-import com.wao.skydodge.pistas.generateTrack
-import java.util.Random
-import kotlin.math.sin
+
 
 class Fundo(val context: Context) {
-    // Em GameView
-    var skyX = 0f
-    var cloudsX = 0f
-    var mountainsX = 0f
 
+    var mountainsX = 0f
+    var mountainsXR = 0f
 
     var mountainsY = 0f
-    var mountainsY2 = 0f
-    var mountainsSpeed = 0f
+     var mountainsSpeed = 0f
     var reduzindo = false
     var distancia = 0
     var index2 = 1
@@ -35,8 +24,7 @@ class Fundo(val context: Context) {
     val trackRenderer = TrackRenderer(context)
 
     var mountainsX2 = 0f
-    var yBaseAux = 400f
-    fun update(trackRenderer: TrackRenderer) {
+     fun update(trackRenderer: TrackRenderer) {
 
 
 // No método de atualização:
@@ -57,7 +45,7 @@ class Fundo(val context: Context) {
 
         mountainsX -= mountainsSpeed
         mountainsX2 -= mountainsSpeed
-
+        mountainsXR  -= mountainsSpeed
 
         trackRenderer.updateScroll(mountainsX)
 
@@ -106,102 +94,8 @@ index+=2
         // ... desenha o restante do jogo
     }
 
-    fun geraHibrido(): Bitmap {
-        val track = generateTrack(50)
-        val b: Bitmap = Bitmap.createBitmap(
-            backgroundMountains.width,
-            backgroundMountains.height,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(b)
-        trackRenderer.draw(canvas)
-        return b
-    }
-//
-//    fun geraHibrido():Bitmap{
-//        val track = generateTrack(50)
-//        val b :Bitmap = Bitmap.createBitmap(backgroundMountains.width,backgroundMountains.height,Bitmap.Config.ARGB_8888)
-//        val canvas = Canvas(b)
-//        drawTrack(canvas, track)
-//        return b
-//    }
-
-    fun gerarBitmapOnduladoComTextura(
-        context: Context,
-        largura: Int,
-        altura: Int,
-        texturaBitmap: Bitmap
-    ): Bitmap {
-        val bitmap = Bitmap.createBitmap(largura, altura, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.Transparent.toArgb())
-
-        val random = java.util.Random()
-        val linhas = 1
-
-        // Criar o shader da textura
-        val shader = BitmapShader(texturaBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
-
-        val paintFill = Paint().apply {
-            shader?.let { this.shader = it }
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
-
-        val paintStroke = Paint().apply {
-            color = Color.Black.toArgb()
-            style = Paint.Style.STROKE
-            strokeWidth = 10f
-            isAntiAlias = true
-        }
-
-        for (i in 0 until linhas) {
-            //   var yBase = altura / (linhas + 1) * (i + 1)
-            val amplitude = random.nextInt(230) + 10
-            val ciclos = 2 + random.nextInt(2)
-            val freq = (2 * Math.PI * ciclos) / largura
-            var yBase = 0
-            if (i == 0) {
-                yBase = (altura * 0.5f).toInt()
-            } else {
-                yBase = 0
-
-            }
-            val path = Path()
-            path.moveTo(0f, yBase.toFloat())
 
 
-            var lastX = 0f
-            var lastY = yBase.toFloat()
-
-            for (x in 0..largura step 20) {
-                val y = yBase + sin(x * freq).toFloat() * amplitude
-                val midX = (lastX + x) / 2
-                val midY = (lastY + y) / 2
-                path.quadTo(lastX, lastY, midX, midY)
-                lastX = x.toFloat()
-                lastY = y.toFloat()
-            }
-
-//            path.lineTo(largura.toFloat(), (yBase + 100).toFloat())
-//            path.lineTo(0f, (yBase + 100).toFloat())
-//            path.close()
-
-            if (i == 1) {
-                val num = (altura / 3)
-                path.lineTo((largura - 100).toFloat(), (yBase - num).toFloat())
-                path.lineTo(0f, (yBase - num).toFloat())
-            } else {
-                val num = (altura / 2)
-                path.lineTo((largura + 100).toFloat(), (yBase + num).toFloat())
-                path.lineTo(0f, (yBase + num).toFloat())
-            }
-            canvas.drawPath(path, paintFill)
-            canvas.drawPath(path, paintStroke)
-        }
-
-        return bitmap
-    }
 
 
 }

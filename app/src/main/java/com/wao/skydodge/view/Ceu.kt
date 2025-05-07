@@ -10,9 +10,7 @@ import android.graphics.Shader
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.wao.skydodge.pistas.TrackRenderer
-import com.wao.skydodge.pistas.drawTrack
-import com.wao.skydodge.pistas.generateTrack
-import java.util.Random
+
 import kotlin.math.sin
 
 class Ceu (val context: Context){

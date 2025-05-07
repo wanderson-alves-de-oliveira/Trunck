@@ -13,7 +13,6 @@ import android.util.DisplayMetrics
 import androidx.compose.ui.geometry.Offset
 import com.wao.skydodge.R
 import com.wao.skydodge.ferramentas.Colisao
-import com.wao.skydodge.ferramentas.ModoDeslise
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.Roda
 import java.lang.StrictMath.toDegrees
@@ -180,7 +179,7 @@ class Carro(context: Context) {
 
             //  gameouver = true
 
-            colidiu(roda)
+            colidiu(roda,fundo)
 
         }
         else if (colisao.colideComMapa(
@@ -192,7 +191,7 @@ class Carro(context: Context) {
         ) {
 
             //  gameouver = true
-            colidiu(roda)
+            colidiu(roda,fundo)
         }
         else {
             roda.gravity = 3.0f
@@ -201,7 +200,7 @@ class Carro(context: Context) {
 
     }
 
-    private fun colidiu(roda: Roda) {
+    private fun colidiu(roda: Roda, fundo: Fundo? =null) {
 
         val terrainY = colisao.ultimoY
         if (roda.y + roda.altura > terrainY ) {
@@ -209,6 +208,7 @@ class Carro(context: Context) {
             roda.gravity = 0f
             roda.velocityY = 0f
         }
+
 
 
     }

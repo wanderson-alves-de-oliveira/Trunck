@@ -13,11 +13,9 @@ import android.util.DisplayMetrics
 import androidx.compose.ui.geometry.Offset
 import com.wao.skydodge.R
 import com.wao.skydodge.ferramentas.Colisao
-import com.wao.skydodge.ferramentas.ModoDeslise
-import com.wao.skydodge.view.Fundo
+ import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.Roda
-import java.lang.StrictMath.random
-import java.lang.StrictMath.toDegrees
+ import java.lang.StrictMath.toDegrees
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -122,9 +120,7 @@ fun moverX(vel : Float){
 
             moverX(velocidadeX)
             km += velocidadeX
-            if(km>fundo.backgroundMountains.width){
-                km=fundo.backgroundMountains.width.toFloat()
-            }
+
         }
         rodaF.update()
         rodaT.update()
@@ -157,8 +153,19 @@ fun moverX(vel : Float){
 
     private fun verificarPosiçãoPista(fundo: Fundo) {
 
-        rodaF.x= (f+km)
-        rodaT.x= (t+km)
+        rodaF.x=fundo.mountainsXR+(f+km)
+        rodaT.x=fundo.mountainsXR+(t+km)
+        if(rodaF.x> fundo.backgroundMountains.width||
+            rodaT.x+(fundo.backgroundMountains.width/2)<0f){
+            rodaT.gravity = 0f
+            rodaF.gravity = 0f
+            rodaT.y = 50f
+            rodaF.y = 50f
+
+        }else{
+            rodaT.gravity = 3.0f
+            rodaF.gravity = 3.0f
+        }
 
 
     }
