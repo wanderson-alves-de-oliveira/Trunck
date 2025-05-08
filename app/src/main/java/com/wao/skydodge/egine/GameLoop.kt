@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.graphics.RectF
 import android.media.MediaPlayer
 import android.util.DisplayMetrics
@@ -133,7 +134,9 @@ class GameLoop(
     var semInternet = false
 
     private var credLuz = Venceu(this.context, (w), (h), 2)
-
+    private val obstacles = mutableListOf<Obstacle>()
+    private var obstacleTimer = 0L
+    private val obstacleInterval = 200L
     private var premiar = false
 
 
@@ -216,8 +219,33 @@ class GameLoop(
 
             if (!gameouver) {
 
+                // Atualiza obstáculos
+                val scrollSpeed = fundo.mountainsSpeed
+                obstacles.forEach { it.update(scrollSpeed) }
+                obstacles.removeAll { it.isOffScreen() }
 
+                // Gera novo obstáculo
+                obstacleTimer += 1
+                if (obstacleTimer > obstacleInterval) {
+                    obstacleTimer = 0
+                    addRandomObstacle(fundo)
+                }
                     carro.update(fundo)
+
+                val novoX =carro.rodaF.x
+                val novoY = carro.rodaF.y
+                val rectf = RectF(
+                    (novoX) ,
+                    (novoY) ,
+                    (novoX + (carro.rodaF.largura).toInt()) ,
+                    (novoY + (carro.rodaF.altura.toInt()))
+                )
+
+               if( checkCollision(rectf)){
+                   fundo.mountainsSpeed-=20
+
+
+               }
                     updateCameraOffset(carro.rodaT.y)
 
 
@@ -269,7 +297,57 @@ class GameLoop(
 
 }
 
+    fun addRandomObstacle(fundo: Fundo) {
+        val obstacleBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck) // substitua pela sua imagem
 
+
+        val yGround =  420f
+
+        var obstaclex = Obstacle(
+            bitmap = obstacleBitmap,
+            x = fundo.backgroundMountains.width.toFloat(),
+            y = 0f,
+            width = 150,
+            height = 150
+        )
+
+        var obstaclex2 = Obstacle(
+            bitmap = obstacleBitmap,
+            x = (fundo.backgroundMountains2.width+300).toFloat(),
+            y = 0f,
+            width = 150,
+            height = 150
+        )
+
+        while (!obstaclex.verirficarColisao(fundo)){
+
+            obstaclex.y+=150f
+        }
+        while (!obstaclex2.verirficarColisao(fundo)){
+
+            obstaclex2.y+=150f
+        }
+
+
+        obstacles.add(obstaclex)
+        obstacles.add(obstaclex2)
+    }
+
+    fun checkCollision(playerRect: RectF): Boolean {
+        var ob = obstacles.filter {
+            obstacles.any { obstacle ->
+                RectF(
+                    obstacle.x,
+                    obstacle.y,
+                    obstacle.x + obstacle.width,
+                    obstacle.y + obstacle.height
+                )
+                    .intersect(playerRect)
+            }
+        }
+
+        return ob.isNotEmpty()
+    }
 
 private fun adsr() {
     gameView.showRewardedAd(
@@ -430,6 +508,9 @@ private fun drawGame(cam: Canvas?) {
    // canvas?.let { carroRival2.draw(it) }
 
     canvas?.let { carro.draw(it) }
+
+
+    obstacles.forEach { it.draw(canvas!!)}
     canvas?.restore()
 
 
