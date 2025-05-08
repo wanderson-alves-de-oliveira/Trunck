@@ -70,7 +70,7 @@ class GameLoop(
      private var carro = Carro(context)
     private var carroRival = CarroRival(context)
     private var carroRival1 = CarroRival(context)
-    private var carroRival2 = CarroRival(context)
+  //  private var carroRival2 = CarroRival(context)
 
 
     private var fundo = Fundo(context)
@@ -226,8 +226,6 @@ class GameLoop(
 
 
 
-
-
                     fundo.update(trackRenderer)
 
 
@@ -242,7 +240,7 @@ class GameLoop(
 
 
 
-                    carroRival2.update(fundo)
+                  //  carroRival2.update(fundo)
 
 
 
@@ -429,7 +427,7 @@ private fun drawGame(cam: Canvas?) {
 
     canvas?.let { carroRival1.draw(it) }
 
-    canvas?.let { carroRival2.draw(it) }
+   // canvas?.let { carroRival2.draw(it) }
 
     canvas?.let { carro.draw(it) }
     canvas?.restore()
@@ -460,7 +458,7 @@ private fun drawGame(cam: Canvas?) {
 
          pos.add(carroRival)
         pos.add(carroRival1 )
-        pos.add(carroRival2)
+     //   pos.add(carroRival2)
 
         pos.sortedBy { it.rodaT.x }
 
@@ -621,8 +619,8 @@ private fun init() {
     carroRival1.iniciarRodas()
 
 
-    carroRival2.screenHeight = h
-    carroRival2.iniciarRodas()
+  //  carroRival2.screenHeight = h
+  //  carroRival2.iniciarRodas()
 
 
 
@@ -632,19 +630,19 @@ private fun init() {
     carroRival1.f = 2800f
     carroRival1.t = 2650f
 
-    carroRival2.f = 3800f
-    carroRival2.t = 3650f
+  //  carroRival2.f = 3800f
+  //  carroRival2.t = 3650f
 
 
 
     carroRival.bitmap = selecao.listaMonters[2]
     carroRival1.bitmap = selecao.listaMonters[3]
-    carroRival2.bitmap = selecao.listaMonters[4]
+  //  carroRival2.bitmap = selecao.listaMonters[4]
 
     carro.colisao = colisao
     carroRival.colisao = colisao2
     carroRival1.colisao = colisao3
-    carroRival2.colisao = colisao4
+ //   carroRival2.colisao = colisao4
     var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb,options)
     var n = Bitmap.createScaledBitmap(
         nx,
@@ -686,7 +684,7 @@ private fun init() {
 
     carroRival.verificarPosiçãoPista(fundo)
     carroRival1.verificarPosiçãoPista(fundo)
-    carroRival2.verificarPosiçãoPista(fundo)
+   // carroRival2.verificarPosiçãoPista(fundo)
 }
 
 private fun popularTiles() {
@@ -818,9 +816,10 @@ fun onTouchEvent(event: MotionEvent): Boolean {
                     carroRival.parou=false
                     carroRival1.inicio=true
                     carroRival1.parou=false
-                    carroRival2.inicio=true
-                    carroRival2.parou=false
+                  //  carroRival2.inicio=true
+                  //  carroRival2.parou=false
                      fundo.mountainsSpeed += 2f
+                    carro.acelerando = true
                     return true
                 }
 
@@ -835,6 +834,7 @@ fun onTouchEvent(event: MotionEvent): Boolean {
                         carro.parou = false
                         //  carro.reduzindo = false
                         fundo.mountainsSpeed += 1f
+                       // carro.acelerando = true
                     }
                     return true
                 }
@@ -848,7 +848,7 @@ fun onTouchEvent(event: MotionEvent): Boolean {
 
                         fundo.mountainsX2 = 0f //+ 1800
                     }
-
+                    carro.acelerando = true
                     fundo.reduzindo = true
                     carro.reduzindo = true
                     isTouching = false

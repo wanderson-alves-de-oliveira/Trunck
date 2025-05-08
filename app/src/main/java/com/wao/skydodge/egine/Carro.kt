@@ -27,6 +27,7 @@ class Carro(context: Context) {
      var screenHeight = 0
     var reduzindo = false
     var parou = false
+    var acelerando = false
  var estacionado = false
     var rotacao = 0f
     var largura = 0f
@@ -73,6 +74,10 @@ class Carro(context: Context) {
         if(rodaF.x<rodaT.x){
             rodaF.x = rodaT.x+200
         }
+
+
+
+
     rodaF.update()
         rodaT.update()
         if(reduzindo){
