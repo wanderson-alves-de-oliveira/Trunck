@@ -11,17 +11,19 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.RectF
 import android.media.MediaPlayer
+import android.os.Build
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.SurfaceHolder
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.toArgb
 import com.wao.skydodge.R
 import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.pistas.TrackRenderer
- import com.wao.skydodge.view.BotaoM
+import com.wao.skydodge.view.BotaoM
 import com.wao.skydodge.view.Ceu
 import com.wao.skydodge.view.Fundo
 import com.wao.skydodge.view.GameView
@@ -32,7 +34,9 @@ import com.wao.skydodge.view.Venceu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
- import kotlin.math.max
+import kotlinx.coroutines.runBlocking
+import kotlin.math.max
+import kotlin.random.Random
 
 class GameLoop(
     private val surfaceHolder: SurfaceHolder,
@@ -41,11 +45,12 @@ class GameLoop(
 ) : Thread() {
     private var running = false
     private var isTouching = false
+    private var isJumping = false
+    private var isAccelerating = false
     private var lastTime = System.nanoTime()
     private val targetFps = 60
     private var toque = 0
     private var preload = 0
-
     private val optimalTime = 1_000_000_000 / targetFps
 
     private val trackRenderer = TrackRenderer(context)
@@ -68,10 +73,10 @@ class GameLoop(
     private val selecao = Selecao(context, w, h)
 
     private var venceu = false
-     private var carro = Carro(context)
+    private var carro = Carro(context)
     private var carroRival = CarroRival(context)
     private var carroRival1 = CarroRival(context)
-  //  private var carroRival2 = CarroRival(context)
+    //  private var carroRival2 = CarroRival(context)
 
 
     private var fundo = Fundo(context)
@@ -86,10 +91,11 @@ class GameLoop(
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565
     }
-    private var carrinho = BitmapFactory.decodeResource(context.resources, R.drawable.carrinho,options)
-    private var noadsP = BitmapFactory.decodeResource(context.resources, R.drawable.noads,options)
+    private var carrinho =
+        BitmapFactory.decodeResource(context.resources, R.drawable.carrinho, options)
+    private var noadsP = BitmapFactory.decodeResource(context.resources, R.drawable.noads, options)
 
-    private var coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda,options)
+    private var coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda, options)
     private val coinP = Bitmap.createScaledBitmap(
         coin,
         ((w * 0.1f)).toInt(),
@@ -121,9 +127,10 @@ class GameLoop(
         2000
 
     )
-    private var lampada = BitmapFactory.decodeResource(context.resources, R.drawable.lampada,options)
-    private var ima = BitmapFactory.decodeResource(context.resources, R.drawable.ima,options)
-    private var giro = BitmapFactory.decodeResource(context.resources, R.drawable.giro,options)
+    private var lampada =
+        BitmapFactory.decodeResource(context.resources, R.drawable.lampada, options)
+    private var ima = BitmapFactory.decodeResource(context.resources, R.drawable.ima, options)
+    private var giro = BitmapFactory.decodeResource(context.resources, R.drawable.giro, options)
     private val b: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 
     private var main = MainView(this.context, (w * 1.1f).toInt(), (h * 1.1f).toInt())
@@ -138,16 +145,16 @@ class GameLoop(
     private var obstacleTimer = 0L
     private val obstacleInterval = 200L
     private var premiar = false
+    private val touches = mutableMapOf<Int, Pair<Float, Float>>()
 
-
-     private var timePress = 0
+    private var timePress = 0
 
     //var b2: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     private val b3: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 
     private var pontuacaoNova = 0
     var score = 0
-     private var valorminimo = 300
+    private var valorminimo = 300
 
     private var luzP = 0
     private var imaP = 0
@@ -184,6 +191,7 @@ class GameLoop(
         join()
     }
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun run() {
         init()
         while (running) {
@@ -213,127 +221,177 @@ class GameLoop(
     }
 
     private var canvas: Canvas? = null
+
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private fun update() {
 
 
+        if (!gameouver) {
+            if (isAccelerating) {
+                isTouching = true
+                carro.applyLift()
+                carro.parou = false
+                fundo.reduzindo = false
+                carroRival.inicio = true
+                carroRival.parou = false
+                carroRival1.inicio = true
+                carroRival1.parou = false
+                fundo.mountainsSpeed += 2f
+                carro.acelerando = true
+            }
+            if (isJumping && carro.rodaT.gravity==0f  ) {
+                carro.rotacao = 0f
+                carro.pulo()
+            }
 
-            if (!gameouver) {
 
-                // Atualiza obstáculos
-                val scrollSpeed = fundo.mountainsSpeed
-                obstacles.forEach { it.update(scrollSpeed) }
-                obstacles.removeAll { it.isOffScreen() }
+            carro.update(fundo)
 
-                // Gera novo obstáculo
-                obstacleTimer += 1
-                if (obstacleTimer > obstacleInterval) {
-                    obstacleTimer = 0
-                    addRandomObstacle(fundo)
+            runBlocking {
+                launch(Dispatchers.Default) {
+                    updateOB()
+
                 }
-                    carro.update(fundo)
-
-                val novoX =carro.rodaF.x
-                val novoY = carro.rodaF.y
-                val rectf = RectF(
-                    (novoX) ,
-                    (novoY) ,
-                    (novoX + (carro.rodaF.largura).toInt()) ,
-                    (novoY + (carro.rodaF.altura.toInt()))
-                )
-
-               if( checkCollision(rectf)){
-                   fundo.mountainsSpeed-=20
-
-
-               }
-                    updateCameraOffset(carro.rodaT.y)
-
-
-
-
-
-
-
-                    fundo.update(trackRenderer)
-
-
-
-                    carroRival.update(fundo)
-
-
-
-                    carroRival1.update(fundo)
-
-
-
-
-
-                  //  carroRival2.update(fundo)
-
-
-
-
-
-                    if (fundo.mountainsSpeed > 1) {
-                        ceu.corremdo = true
-                    } else {
-                        ceu.corremdo = false
-                    }
-
-
-                    ceu.update()
-
-                    if (gameState == GameState.SELECAO) {
-                        selecao.update()
-                    }
-
             }
 
 
 
+            updateCameraOffset(carro.rodaT.y)
+            fundo.update(trackRenderer)
+            carroRival.update(fundo)
+            carroRival1.update(fundo)
+            ; if (fundo.mountainsSpeed > 1) {
+                ceu.corremdo = true
+            } else {
+                ceu.corremdo = false
+            }
 
-    draw()
+
+            ceu.update()
+
+            if (gameState == GameState.SELECAO) {
+                selecao.update()
+            }
+
+        }
 
 
-}
-
-    fun addRandomObstacle(fundo: Fundo) {
-        val obstacleBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck) // substitua pela sua imagem
 
 
-        val yGround =  420f
+        draw()
+
+
+    }
+
+
+    private fun updateOB() {
+        val novoX = carro.rodaF.x
+        val novoY = carro.rodaF.y
+        val rectf = RectF(
+            (novoX),
+            (novoY),
+            (novoX + (carro.rodaF.largura).toInt()),
+            (novoY + (carro.rodaF.altura.toInt()))
+        )
+        val scrollSpeed = fundo.mountainsSpeed
+        obstacles.forEach { it.update(scrollSpeed) }
+        obstacleTimer += 1
+        var ob = checkCollision(rectf)
+        if (ob.isNotEmpty() && ob[0].caiu) {
+
+            ob.map {
+                it.voar = true
+                it.snowmanVelocityX =
+                    if (scrollSpeed > 0) scrollSpeed * 0.8f else (scrollSpeed * -1) * 0.8f
+                it.snowmanVY *= -0.5f
+
+            }
+
+            fundo.mountainsSpeed = -20f
+
+            carro.rotacao -= 30
+
+        }
+
+        var opp = obstacles.filter { it.x < -100 }
+
+        if (opp.isNotEmpty()) {
+            obstacles.removeAll(opp)
+            addRandomObstacle(fundo, 0f)
+        }
+
+        if (obstacles.isNotEmpty()) {
+            if (obstacles[0].caiu == false) {
+                obstacles[0].y -= 15f
+                obstacles[0].caiu = !(obstacles[0].verirficarColisao(fundo))
+
+
+            }
+        }
+
+
+        var oppx = obstacles.filter { it.voar }
+
+        if (oppx.isNotEmpty()) {
+            oppx[0].giro += oppx[0].snowmanVelocityX
+            oppx[0].sumindo = true
+
+
+//           if(oppx[0].verirficarColisao(fundo)){
+//               oppx[0].snowmanVY = 0f
+//               oppx[0].snowmanVelocityX = 0f
+//               oppx[0].voar = false
+//             //  oppx[0].x = -200f
+////               oppx[0].snowmanVY *= -0.5f
+////
+////               if (kotlin.math.abs(oppx[0].snowmanVY) < 1f ) {
+////                   oppx[0].snowmanVY = 0f
+////                   oppx[0].snowmanVelocityX = 0f
+////                   oppx[0].voar = false
+////                   oppx[0].x = -200f
+////               }
+//
+//           }
+
+
+        }
+
+    }
+
+    fun addRandomObstacle(fundo: Fundo, x: Float) {
+        var obstacleBitmap = BitmapFactory.decodeResource(
+            context.resources,
+            R.drawable.boneco
+        ) // substitua pela sua imagem
+        obstacleBitmap = Bitmap.createScaledBitmap(
+            obstacleBitmap,
+            (100).toInt(),
+            (180).toInt(),
+            false
+        )
 
         var obstaclex = Obstacle(
             bitmap = obstacleBitmap,
-            x = fundo.backgroundMountains.width.toFloat(),
+            x = fundo.backgroundMountains.width.toFloat() + x,
             y = 0f,
-            width = 150,
-            height = 150
+            width = 100,
+            height = 180
         )
 
-        var obstaclex2 = Obstacle(
-            bitmap = obstacleBitmap,
-            x = (fundo.backgroundMountains2.width+300).toFloat(),
-            y = 0f,
-            width = 150,
-            height = 150
-        )
 
-        while (!obstaclex.verirficarColisao(fundo)){
+        while (!obstaclex.verirficarColisao(fundo)) {
 
-            obstaclex.y+=150f
-        }
-        while (!obstaclex2.verirficarColisao(fundo)){
-
-            obstaclex2.y+=150f
+            obstaclex.y += 100f
+            //  obstaclex.girar()
         }
 
+        obstaclex.chegou = true
 
         obstacles.add(obstaclex)
-        obstacles.add(obstaclex2)
+
     }
 
-    fun checkCollision(playerRect: RectF): Boolean {
+    fun checkCollision(playerRect: RectF): MutableList<Obstacle> {
         var ob = obstacles.filter {
             obstacles.any { obstacle ->
                 RectF(
@@ -346,581 +404,575 @@ class GameLoop(
             }
         }
 
-        return ob.isNotEmpty()
+        return ob.toMutableList()
     }
 
-private fun adsr() {
-    gameView.showRewardedAd(
-        onReward = {
-            premiar = true
-        },
-        onAdClosed = {
-            if (premiar) {
-                receberPremio()
+    private fun adsr() {
+        gameView.showRewardedAd(
+            onReward = {
+                premiar = true
+            },
+            onAdClosed = {
+                if (premiar) {
+                    receberPremio()
+                }
+                gameView.recarregarRewardedAd()
             }
-            gameView.recarregarRewardedAd()
-        }
-    )
-}
-
-private fun adsi() {
-    finalizarFase()
-    gameView.showInterstitialAd(
-
-        onAdClosed = {
-
-            gameView.recarregarIntersticialAd()
-
-        }
-
-    )
-}
-
-private fun receberPremio() {
-    premiar = false
-
-    when (tipodePremio) {
-        0 -> reviver()
-        1 -> luzP += 3
-        2 -> imaP += 3
-        3 -> sufleP += 3
-        4 -> {
-            score += 50
-
-            venceuP.btmCoin.liberar = 0
-        }
+        )
     }
 
-    val bd = BDSky(context)
-    // val base = bd.buscar()
-    bd.atualizar(Base(fase, score.toLong(), luzP, imaP, sufleP))
+    private fun adsi() {
+        finalizarFase()
+        gameView.showInterstitialAd(
 
-}
+            onAdClosed = {
 
-private fun reviver() {
-    perdeuL =
-        Venceu(this.context, (w), (h), 1)
-    perdeuL.btm.liberar = 0
-}
+                gameView.recarregarIntersticialAd()
 
-private fun criditar(obj: Venceu, canvas: Canvas) {
+            }
 
-
-    obj.pontos = score
-    obj.fase = ultimaFase + 1
-    obj.pontos = score
-
-    obj.draw(canvas)
-
-
-}
-
-private fun posCredito(obj: Venceu) {
-    val bd = BDSky(context)
-    score -= valorminimo
-    val base = bd.buscar()
-    base.pontos = score.toLong()
-    base.luz = luzP
-    base.ima = imaP
-    base.sufle = sufleP
-    bd.atualizar(base)
-
-    obj.btmCoin.liberar = 0
-}
-
-private fun finalizarFase() {
-
-    fase++
-
-    venceu = false
-    venceuP = Venceu(this.context, (w), (h), 0)
-    val bd = BDSky(context)
-    val base = bd.buscar()
-    bd.atualizar(Base(fase, score.toLong(), base.luz, base.ima, base.sufle))
-
-    ultimaFase = fase
-
-    popularTiles()
-
-
-}
-
-private fun draw() {
-
-
-    try {
-
-        if (timePress > 0) {
-            timePress--
-
-        }
-
-        when (gameState) {
-            GameState.MENU -> drawMenu(canvas)
-            GameState.PLAYING -> drawGame(canvas)
-            GameState.GAME_OVER -> drawGameOver(canvas)
-            GameState.SHOP -> drawShop(canvas)
-            GameState.SELECAO -> drawSelecao(canvas)
-        }
-
-
-    } catch (e: Exception) {
-        // Handle any exceptions that occur during drawing
-        e.printStackTrace()
-    } finally {
-        if (canvas != null) {
-            surfaceHolder.unlockCanvasAndPost(canvas)
-        }
+        )
     }
 
+    private fun receberPremio() {
+        premiar = false
 
-}
+        when (tipodePremio) {
+            0 -> reviver()
+            1 -> luzP += 3
+            2 -> imaP += 3
+            3 -> sufleP += 3
+            4 -> {
+                score += 50
 
-var cameraOffsetY = 0f
+                venceuP.btmCoin.liberar = 0
+            }
+        }
 
-fun updateCameraOffset(carY: Float) {
-    val baseY = h * 0.6f
-    val targetOffsetY = max(0f, baseY - carY) * 0.5f
-    cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
-}
+        val bd = BDSky(context)
+        // val base = bd.buscar()
+        bd.atualizar(Base(fase, score.toLong(), luzP, imaP, sufleP))
 
-private fun drawGame(cam: Canvas?) {
-   // canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
-    canvas = cam
+    }
+
+    private fun reviver() {
+        perdeuL =
+            Venceu(this.context, (w), (h), 1)
+        perdeuL.btm.liberar = 0
+    }
+
+    private fun criditar(obj: Venceu, canvas: Canvas) {
+
+
+        obj.pontos = score
+        obj.fase = ultimaFase + 1
+        obj.pontos = score
+
+        obj.draw(canvas)
+
+
+    }
+
+    private fun posCredito(obj: Venceu) {
+        val bd = BDSky(context)
+        score -= valorminimo
+        val base = bd.buscar()
+        base.pontos = score.toLong()
+        base.luz = luzP
+        base.ima = imaP
+        base.sufle = sufleP
+        bd.atualizar(base)
+
+        obj.btmCoin.liberar = 0
+    }
+
+    private fun finalizarFase() {
+
+        fase++
+
+        venceu = false
+        venceuP = Venceu(this.context, (w), (h), 0)
+        val bd = BDSky(context)
+        val base = bd.buscar()
+        bd.atualizar(Base(fase, score.toLong(), base.luz, base.ima, base.sufle))
+
+        ultimaFase = fase
+
+        popularTiles()
+
+
+    }
+
+    private fun draw() {
+
+
+        try {
+
+            if (timePress > 0) {
+                timePress--
+
+            }
+
+            when (gameState) {
+                GameState.MENU -> drawMenu(canvas)
+                GameState.PLAYING -> drawGame(canvas)
+                GameState.GAME_OVER -> drawGameOver(canvas)
+                GameState.SHOP -> drawShop(canvas)
+                GameState.SELECAO -> drawSelecao(canvas)
+            }
+
+
+        } catch (e: Exception) {
+            // Handle any exceptions that occur during drawing
+            e.printStackTrace()
+        } finally {
+            if (canvas != null) {
+                surfaceHolder.unlockCanvasAndPost(canvas)
+            }
+        }
+
+
+    }
+
+    var cameraOffsetY = 0f
+
+    fun updateCameraOffset(carY: Float) {
+        val baseY = h * 0.6f
+        val targetOffsetY = max(0f, baseY - carY) * 0.5f
+        cameraOffsetY += (targetOffsetY - cameraOffsetY) * 0.1f
+    }
+
+    private fun drawGame(cam: Canvas?) {
+        // canvas!!.drawColor(androidx.compose.ui.graphics.Color.Black.toArgb())
+        canvas = cam
 
         ceu.draw(canvas!!)
 
 
 
-    canvas?.save()
-    canvas?.translate(0f, cameraOffsetY)
+        canvas?.save()
+        canvas?.translate(0f, cameraOffsetY)
 
 
 
-    canvas?.let { fundo.draw(it) }
-   // trackRenderer.draw(canvas)
+        canvas?.let { fundo.draw(it) }
+        // trackRenderer.draw(canvas)
 
 
-    canvas?.let { carroRival.draw(it) }
+        canvas?.let { carroRival.draw(it) }
 
-    canvas?.let { carroRival1.draw(it) }
+        canvas?.let { carroRival1.draw(it) }
 
-   // canvas?.let { carroRival2.draw(it) }
+        // canvas?.let { carroRival2.draw(it) }
 
-    canvas?.let { carro.draw(it) }
-
-
-    obstacles.forEach { it.draw(canvas!!)}
-    canvas?.restore()
+        canvas?.let { carro.draw(it) }
 
 
+        obstacles.forEach { it.draw(canvas!!) }
+        canvas?.restore()
 
-    if (gameouver) {
-        paint.textSize = spToPx((this.w * 0.05f))
-        canvas?.drawText("FIM DE JOGO", 100f, 790f, paint)
-    } else {
 
-        paint.textSize = spToPx((this.w * 0.01f))
-        canvas?.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
-        canvas?.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
+
+        if (gameouver) {
+            paint.textSize = spToPx((this.w * 0.05f))
+            canvas?.drawText("FIM DE JOGO", 100f, 790f, paint)
+        } else {
+
+            paint.textSize = spToPx((this.w * 0.01f))
+            canvas?.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
+            canvas?.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
+
+        }
+
+
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
 
     }
 
+    private fun verificarPos(): Int {
+        var pos: MutableList<CarroRival> = mutableListOf()
 
-    if (cLocked) {
-        surfaceHolder.unlockCanvasAndPost(canvas)
-        cLocked = false
-    }
-
-}
-
-    private fun verificarPos():Int {
-        var pos :MutableList<CarroRival> = mutableListOf()
-
-         pos.add(carroRival)
-        pos.add(carroRival1 )
-     //   pos.add(carroRival2)
+        pos.add(carroRival)
+        pos.add(carroRival1)
+        //   pos.add(carroRival2)
 
         pos.sortedBy { it.rodaT.x }
 
-        var posx = pos.filter { it.rodaT.x>carro.rodaT.x }
+        var posx = pos.filter { it.rodaT.x > carro.rodaT.x }
 
         var p = 0
-        when(posx.size){
-            0->p=1
-            1->p=2
-            2->p=3
-            3->p=4
+        when (posx.size) {
+            0 -> p = 1
+            1 -> p = 2
+            2 -> p = 3
+            3 -> p = 4
 
         }
-return p
+        return p
     }
 
     private fun drawGameOver(canvas: Canvas?) {
-    TODO("Not yet implemented")
-}
-
-private fun drawSelecao(canvas: Canvas?) {
-    selecao.draw(canvas!!)
-    if (cLocked) {
-        surfaceHolder.unlockCanvasAndPost(canvas)
-        cLocked = false
+        TODO("Not yet implemented")
     }
-}
 
-private fun drawShop(canvas: Canvas?) {
-    lojaWAO.semanuncio = semanuncio
-    lojaWAO.draw(canvas!!)
-}
+    private fun drawSelecao(canvas: Canvas?) {
+        selecao.draw(canvas!!)
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
+    }
 
-private fun drawMenu(canvas: Canvas?) {
+    private fun drawShop(canvas: Canvas?) {
+        lojaWAO.semanuncio = semanuncio
+        lojaWAO.draw(canvas!!)
+    }
 
-    if (ultimaFase == 0) {
+    private fun drawMenu(canvas: Canvas?) {
+
+        if (ultimaFase == 0) {
+            val bd = BDSky(context)
+            val base = bd.buscar()
+            ultimaFase = base.nivel
+            fase = ultimaFase
+
+
+        }
+        btm.stt = "Nível $ultimaFase"
+
+        if (canvas != null) {
+
+            try {
+                if (lojaWAO.atualizar) {
+                    val bd = BDSky(context)
+                    val base = bd.buscar()
+                    luzP = base.luz
+                    imaP = base.ima
+                    sufleP = base.sufle
+                    score = bd.buscar().pontos.toInt()
+                    lojaWAO.atualizar = false
+
+                }
+
+
+                main.draw(this.canvas!!)
+
+                if (preload >= 100) {
+
+                    if (!semanuncio) {
+
+                        noADS.draw(canvas!!)
+                        compraBT.x = (w * 0.35f)
+                    } else {
+                        compraBT.x = (w * 0.45f)
+
+                    }
+
+
+                    compraBT.draw(canvas!!)
+                    btm.draw(this.canvas!!)
+
+
+                } else {
+                    paint.color = Color.GREEN
+                    canvas!!.drawRoundRect(
+                        RectF(
+                            (w * 0.25f),
+                            h * 0.45f,
+                            ((w * 0.45f) + (100 * (w * 0.003f))),
+                            ((h * 0.5)).toFloat()
+                        ), 60f, 60f, paint
+                    )
+                    paint.color = Color.MAGENTA
+                    canvas!!.drawRoundRect(
+                        RectF(
+                            (w * 0.25f),
+                            h * 0.45f,
+                            ((w * 0.45f) + (preload * (w * 0.003f))),
+                            ((h * 0.5)).toFloat()
+                        ), 60f, 60f, paint
+                    )
+
+                    paint.textSize = spToPx((this.w * 0.014f))
+                    paint.color = Color.WHITE
+                    canvas!!.drawText(
+                        "LOADING...",
+                        (w * 0.36f),
+                        h * 0.48f,
+                        paint
+                    )
+
+
+                    preload += 20
+                }
+
+                if (btm.liberar > 3) {
+                    index = 1
+                    btm.liberar = 0
+                    compraBT.y = h * 0.06f
+                    compraBT.x = w * 0.78f
+                    gameState = GameState.PLAYING
+                    gameStateAUX = gameState
+                }
+
+
+                ///////////////////////////////////////////
+
+
+            } catch (ew: Exception) {
+                ew.stackTrace
+            }
+
+
+        }
+        if (cLocked) {
+            surfaceHolder.unlockCanvasAndPost(canvas)
+            cLocked = false
+        }
+    }
+
+    private fun render() {
+
+        if (!cLocked) {
+            canvas = this.surfaceHolder.lockCanvas()
+            cLocked = true
+        }
+
+    }
+
+    private fun handleInput() {
+
+    }
+
+    private fun init() {
+        carro.screenHeight = h
+        carro.iniciarRodas()
+
+        carroRival.screenHeight = h
+        carroRival.iniciarRodas()
+
+        carroRival1.screenHeight = h
+        carroRival1.iniciarRodas()
+
+
+        //  carroRival2.screenHeight = h
+        //  carroRival2.iniciarRodas()
+
+
+        carroRival.f = 1800f
+        carroRival.t = 1650f
+
+        carroRival1.f = 2800f
+        carroRival1.t = 2650f
+
+        //  carroRival2.f = 3800f
+        //  carroRival2.t = 3650f
+
+
+        carroRival.bitmap = selecao.listaMonters[2]
+        carroRival1.bitmap = selecao.listaMonters[3]
+        //  carroRival2.bitmap = selecao.listaMonters[4]
+
+        carro.colisao = colisao
+        carroRival.colisao = colisao2
+        carroRival1.colisao = colisao3
+        //   carroRival2.colisao = colisao4
+        var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb, options)
+        var n = Bitmap.createScaledBitmap(
+            nx,
+            (w).toInt(),
+            (h).toInt(),
+            false
+        )
+
+
+        var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub, options)
+        var c = Bitmap.createScaledBitmap(
+            cx,
+            (w).toInt(),
+            (h).toInt(),
+            false
+        )
+        var cxx: Bitmap =
+            BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb, options)
+        var cxs = Bitmap.createScaledBitmap(
+            cxx,
+            (w).toInt(),
+
+            (h).toInt(),
+            false
+        )
+        trackRenderer.loadTrackSegments(((w * 1.5f).toInt()), h)
+
+        ceu.backgroundClouds = n
+        //  fundo.backgroundMountains = cxs
+
+        fundo.backgroundMountains = trackRenderer.trackSegments[0]
+
+        fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+
+        fundo.texturaBitmap = cxs
+        ceu.backgroundSky = c
+        fundo.mountainsX = 0f
+
+        fundo.mountainsX2 = fundo.mountainsX + (fundo.backgroundMountains.width).toFloat()//+ 1800
+
+        carroRival.verificarPosiçãoPista(fundo)
+        carroRival1.verificarPosiçãoPista(fundo)
+
+        addRandomObstacle(fundo, 0f)
+
+
+        // carroRival2.verificarPosiçãoPista(fundo)
+    }
+
+    private fun popularTiles() {
+        avaliar3 = false
+        ajustarY = true
+        pontos = 0
+
+        try {
+
+
+            val canvasB = Canvas(b3)
+            canvasB.drawColor(
+                Color.TRANSPARENT,
+                PorterDuff.Mode.CLEAR
+            )
+            paint.color = Color.BLACK
+            paint.alpha = 150
+
+
+            canvasB.drawRoundRect(
+                RectF(
+                    (this.w * 0.08).toFloat(),
+                    ((this.h * 0.75).toFloat() - (this.w * 0.03).toFloat()),
+                    (this.w * 0.93).toFloat(),
+                    ((this.h * 0.75)).toFloat() + (((this.w * 0.9 / 8).toInt()) * 1.22f)
+                ), 30f, 30f, paint
+            )
+            paint.color = Color.BLUE
+            paint.alpha = 150
+
+            canvasB.drawRoundRect(
+                RectF(
+                    (this.w * 0.09).toFloat(),
+                    ((this.h * 0.75).toFloat() - (this.w * 0.02).toFloat()),
+                    (this.w * 0.92).toFloat(),
+                    ((this.h * 0.75).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.15f)
+                ), 30f, 30f, paint
+            )
+            paint.color = Color.GREEN
+            paint.alpha = 150
+
+            canvasB.drawRoundRect(
+                RectF(
+                    (this.w * 0.09).toFloat(),
+                    ((this.h * 0.755).toFloat() - (this.w * 0.02).toFloat()),
+                    (this.w * 0.92).toFloat(),
+                    ((this.h * 0.755).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.0f)
+                ), 30f, 30f, paint
+            )
+            paint.color = Color.BLACK
+            paint.alpha = 255
+
+        } catch (ett: Exception) {
+            ett.stackTrace
+        }
+
+
         val bd = BDSky(context)
+        ultimaFase = bd.buscar().nivel
+
+
         val base = bd.buscar()
-        ultimaFase = base.nivel
+
+        luzP = base.luz
+        imaP = base.ima
+        sufleP = base.sufle
+        score = bd.buscar().pontos.toInt()
+
         fase = ultimaFase
 
 
+
+        walld.shuffle()
+
     }
-    btm.stt = "Nível $ultimaFase"
-
-    if (canvas != null) {
-
-        try {
-            if (lojaWAO.atualizar) {
-                val bd = BDSky(context)
-                val base = bd.buscar()
-                luzP = base.luz
-                imaP = base.ima
-                sufleP = base.sufle
-                score = bd.buscar().pontos.toInt()
-                lojaWAO.atualizar = false
-
-            }
 
 
-            main.draw(this.canvas!!)
+    private fun onTocarEfeito(i: Int) {
+        val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-            if (preload >= 100) {
+        coroutineScope.launch {
 
-                if (!semanuncio) {
-
-                    noADS.draw(canvas!!)
-                    compraBT.x = (w * 0.35f)
+            if (i == 0) {
+                if (!efeitoSonoro.isPlaying) {
+                    efeitoSonoro.setVolume(0.2f, 0.2f)
+                    efeitoSonoro.seekTo(0)
+                    efeitoSonoro.start()
                 } else {
-                    compraBT.x = (w * 0.45f)
-
+                    efeitoSonoro.pause()
+                    efeitoSonoro.setVolume(0.2f, 0.2f)
+                    efeitoSonoro.seekTo(0)
+                    efeitoSonoro.start()
                 }
-
-
-                compraBT.draw(canvas!!)
-                btm.draw(this.canvas!!)
-
-
-            } else {
-                paint.color = Color.GREEN
-                canvas!!.drawRoundRect(
-                    RectF(
-                        (w * 0.25f),
-                        h * 0.45f,
-                        ((w * 0.45f) + (100 * (w * 0.003f))),
-                        ((h * 0.5)).toFloat()
-                    ), 60f, 60f, paint
-                )
-                paint.color = Color.MAGENTA
-                canvas!!.drawRoundRect(
-                    RectF(
-                        (w * 0.25f),
-                        h * 0.45f,
-                        ((w * 0.45f) + (preload * (w * 0.003f))),
-                        ((h * 0.5)).toFloat()
-                    ), 60f, 60f, paint
-                )
-
-                paint.textSize = spToPx((this.w * 0.014f))
-                paint.color = Color.WHITE
-                canvas!!.drawText(
-                    "LOADING...",
-                    (w * 0.36f),
-                    h * 0.48f,
-                    paint
-                )
-
-
-                preload += 20
-            }
-
-            if (btm.liberar > 3) {
-                index = 1
-                btm.liberar = 0
-                compraBT.y = h * 0.06f
-                compraBT.x = w * 0.78f
-                gameState = GameState.PLAYING
-                gameStateAUX = gameState
-            }
-
-
-            ///////////////////////////////////////////
-
-
-        } catch (ew: Exception) {
-            ew.stackTrace
-        }
-
-
-    }
-    if (cLocked) {
-        surfaceHolder.unlockCanvasAndPost(canvas)
-        cLocked = false
-    }
-}
-
-private fun render() {
-
-    if (!cLocked) {
-        canvas = this.surfaceHolder.lockCanvas()
-        cLocked = true
-    }
-
-}
-
-private fun handleInput() {
-
-}
-
-private fun init() {
-    carro.screenHeight = h
-    carro.iniciarRodas()
-
-    carroRival.screenHeight = h
-    carroRival.iniciarRodas()
-
-    carroRival1.screenHeight = h
-    carroRival1.iniciarRodas()
-
-
-  //  carroRival2.screenHeight = h
-  //  carroRival2.iniciarRodas()
-
-
-
-    carroRival.f = 1800f
-    carroRival.t = 1650f
-
-    carroRival1.f = 2800f
-    carroRival1.t = 2650f
-
-  //  carroRival2.f = 3800f
-  //  carroRival2.t = 3650f
-
-
-
-    carroRival.bitmap = selecao.listaMonters[2]
-    carroRival1.bitmap = selecao.listaMonters[3]
-  //  carroRival2.bitmap = selecao.listaMonters[4]
-
-    carro.colisao = colisao
-    carroRival.colisao = colisao2
-    carroRival1.colisao = colisao3
- //   carroRival2.colisao = colisao4
-    var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb,options)
-    var n = Bitmap.createScaledBitmap(
-        nx,
-        (w).toInt(),
-        (h).toInt(),
-        false
-    )
-
-
-    var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub,options)
-    var c = Bitmap.createScaledBitmap(
-        cx,
-        (w).toInt(),
-        (h).toInt(),
-        false
-    )
-    var cxx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb,options)
-    var cxs = Bitmap.createScaledBitmap(
-        cxx,
-        (w).toInt(),
-
-        (h).toInt(),
-        false
-    )
-    trackRenderer.loadTrackSegments(((w*1.5f).toInt()), h)
-
-    ceu.backgroundClouds = n
-  //  fundo.backgroundMountains = cxs
-
-    fundo.backgroundMountains = trackRenderer.trackSegments[0]
-
-   fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
-
-    fundo.texturaBitmap = cxs
-    ceu.backgroundSky = c
-    fundo.mountainsX = 0f
-
-    fundo.mountainsX2 =    fundo.mountainsX + (fundo.backgroundMountains.width).toFloat()//+ 1800
-
-    carroRival.verificarPosiçãoPista(fundo)
-    carroRival1.verificarPosiçãoPista(fundo)
-   // carroRival2.verificarPosiçãoPista(fundo)
-}
-
-private fun popularTiles() {
-    avaliar3 = false
-    ajustarY = true
-    pontos = 0
-
-    try {
-
-
-        val canvasB = Canvas(b3)
-        canvasB.drawColor(
-            Color.TRANSPARENT,
-            PorterDuff.Mode.CLEAR
-        )
-        paint.color = Color.BLACK
-        paint.alpha = 150
-
-
-        canvasB.drawRoundRect(
-            RectF(
-                (this.w * 0.08).toFloat(),
-                ((this.h * 0.75).toFloat() - (this.w * 0.03).toFloat()),
-                (this.w * 0.93).toFloat(),
-                ((this.h * 0.75)).toFloat() + (((this.w * 0.9 / 8).toInt()) * 1.22f)
-            ), 30f, 30f, paint
-        )
-        paint.color = Color.BLUE
-        paint.alpha = 150
-
-        canvasB.drawRoundRect(
-            RectF(
-                (this.w * 0.09).toFloat(),
-                ((this.h * 0.75).toFloat() - (this.w * 0.02).toFloat()),
-                (this.w * 0.92).toFloat(),
-                ((this.h * 0.75).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.15f)
-            ), 30f, 30f, paint
-        )
-        paint.color = Color.GREEN
-        paint.alpha = 150
-
-        canvasB.drawRoundRect(
-            RectF(
-                (this.w * 0.09).toFloat(),
-                ((this.h * 0.755).toFloat() - (this.w * 0.02).toFloat()),
-                (this.w * 0.92).toFloat(),
-                ((this.h * 0.755).toFloat()) + (((this.w * 0.9 / 8).toInt()) * 1.0f)
-            ), 30f, 30f, paint
-        )
-        paint.color = Color.BLACK
-        paint.alpha = 255
-
-    } catch (ett: Exception) {
-        ett.stackTrace
-    }
-
-
-    val bd = BDSky(context)
-    ultimaFase = bd.buscar().nivel
-
-
-    val base = bd.buscar()
-
-    luzP = base.luz
-    imaP = base.ima
-    sufleP = base.sufle
-    score = bd.buscar().pontos.toInt()
-
-    fase = ultimaFase
-
-
-
-    walld.shuffle()
-
-}
-
-
-private fun onTocarEfeito(i: Int) {
-    val coroutineScope = CoroutineScope(Dispatchers.Default)
-
-    coroutineScope.launch {
-
-        if (i == 0) {
-            if (!efeitoSonoro.isPlaying) {
-                efeitoSonoro.setVolume(0.2f, 0.2f)
-                efeitoSonoro.seekTo(0)
-                efeitoSonoro.start()
-            } else {
-                efeitoSonoro.pause()
-                efeitoSonoro.setVolume(0.2f, 0.2f)
-                efeitoSonoro.seekTo(0)
-                efeitoSonoro.start()
-            }
-        } else if (i == 1) {
-            if (!efeitoSonoro2.isPlaying) {
-                efeitoSonoro2.setVolume(0.2f, 0.2f)
-                efeitoSonoro2.seekTo(0)
-                efeitoSonoro2.start()
-            } else {
-                efeitoSonoro2.pause()
-                efeitoSonoro2.setVolume(0.2f, 0.2f)
-                efeitoSonoro2.seekTo(0)
-                efeitoSonoro2.start()
-            }
-        }
-
-
-    }
-}
-
-
-fun onTouchEvent(event: MotionEvent): Boolean {
-
-    if (gameState == GameState.PLAYING) {
-
-        if (event.action == MotionEvent.ACTION_DOWN && event.x > w * 0.8f) {
-            selecao.sair = false
-            gameState = GameState.SELECAO
-        } else {
-
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // Inicia a ação quando o toque começa
-                    isTouching = true
-                    carro.applyLift()  // Faz o avião subir quando pressionado
-                    carro.parou = false
-                    fundo.reduzindo = false
-                    carroRival.inicio=true
-                    carroRival.parou=false
-                    carroRival1.inicio=true
-                    carroRival1.parou=false
-                  //  carroRival2.inicio=true
-                  //  carroRival2.parou=false
-                     fundo.mountainsSpeed += 2f
-                    carro.acelerando = true
-                    return true
+            } else if (i == 1) {
+                if (!efeitoSonoro2.isPlaying) {
+                    efeitoSonoro2.setVolume(0.2f, 0.2f)
+                    efeitoSonoro2.seekTo(0)
+                    efeitoSonoro2.start()
+                } else {
+                    efeitoSonoro2.pause()
+                    efeitoSonoro2.setVolume(0.2f, 0.2f)
+                    efeitoSonoro2.seekTo(0)
+                    efeitoSonoro2.start()
                 }
+            }
 
-                MotionEvent.ACTION_MOVE -> {
-                    // Mantém a ação enquanto o dedo estiver se movendo na tela
-                    if (isTouching) {
-                        // player.applyLift()  // Continua fazendo o avião subir
-                        carro.applyLift()
-                        fundo.reduzindo = false
-                        carro.rodaF.reduzindo = false
-                        carro.rodaT.reduzindo = false
-                        carro.parou = false
-                        //  carro.reduzindo = false
-                        fundo.mountainsSpeed += 1f
-                       // carro.acelerando = true
+
+        }
+    }
+
+
+    private val activePointers = mutableMapOf<Int, String>()
+    fun onTouchEvent(event: MotionEvent): Boolean {
+
+
+        if (gameState == GameState.PLAYING) {
+
+
+
+
+
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                    val pointerIndex = event.actionIndex
+                    val pointerId = event.getPointerId(pointerIndex)
+                    val x = event.getX(pointerIndex)
+
+                    if (event.x > w * 0.8f) {
+                        selecao.sair = false
+                        gameState = GameState.SELECAO
+
                     }
-                    return true
+
+
+                    if (x < w / 2f) {
+                        activePointers[pointerId] = "left"
+                    } else {
+                        activePointers[pointerId] = "right"
+                    }
+                    updateActions()
                 }
 
-                MotionEvent.ACTION_UP -> {
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
+                    val pointerIndex = event.actionIndex
+                    val pointerId = event.getPointerId(pointerIndex)
+                    activePointers.remove(pointerId)
                     if (gameouver) {
                         gameouver = false
                         fundo.distancia = 0
@@ -929,119 +981,145 @@ fun onTouchEvent(event: MotionEvent): Boolean {
 
                         fundo.mountainsX2 = 0f //+ 1800
                     }
-                    carro.acelerando = true
-                    fundo.reduzindo = true
-                    carro.reduzindo = true
-                    isTouching = false
-                    return true
+                    if (event.getY(pointerIndex) < (h * 0.7f).toInt()) {
+                        isJumping = false
+
+                    } else {
+                        isAccelerating = false
+                        carro.acelerando = true
+                        fundo.reduzindo = true
+                        carro.reduzindo = true
+                        isTouching = false
+                    }
+
+
+                    updateActions()
                 }
 
-                else -> return false
+                MotionEvent.ACTION_MOVE -> {
+                    // Verifica todos os dedos ativos
+                    for (i in 0 until event.pointerCount) {
+                        val pointerId = event.getPointerId(i)
+                        val x = event.getX(i)
+                        if (x < w / 2f) {
+                            activePointers[pointerId] = "left"
+                        } else {
+                            activePointers[pointerId] = "right"
+                        }
+                    }
+                    updateActions()
+                }
+            }
+
+
+        } else {
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> handleTouch(event)
             }
         }
 
-
-    } else {
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> handleTouch(event)
-        }
+        return true
     }
-    return true
-}
 
-private fun handleTouch(event: MotionEvent) {
-    when (gameState) {
-        GameState.MENU -> {
-            if (compraBT.containsTouch(
-                    event.x,
-                    event.y
-                )
-            ) {
-                gameStateAUX = gameState
-                gameState = GameState.SHOP
-                lojaWAO.moedas = -2
-                lojaWAO.abrirLoja = true
+    private fun updateActions() {
+        isJumping = activePointers.containsValue("left")
+        isAccelerating = activePointers.containsValue("right")
+    }
 
 
-            } else if (noADS.containsTouch(
-                    event.x,
-                    event.y
-                ) && !semanuncio
-            ) {
+    private fun handleTouch(event: MotionEvent) {
+        when (gameState) {
+            GameState.MENU -> {
+                if (compraBT.containsTouch(
+                        event.x,
+                        event.y
+                    )
+                ) {
+                    gameStateAUX = gameState
+                    gameState = GameState.SHOP
+                    lojaWAO.moedas = -2
+                    lojaWAO.abrirLoja = true
 
-                gameView.comprar("remove_ads")
 
+                } else if (noADS.containsTouch(
+                        event.x,
+                        event.y
+                    ) && !semanuncio
+                ) {
+
+                    gameView.comprar("remove_ads")
+
+
+                }
+
+                if (btm.containsTouch(
+                        event.x,
+                        event.y
+                    )
+                ) {
+
+                    gameStateAUX = gameState
+                    selecao.sair = false
+                    gameState = GameState.SELECAO
+
+                    // gameState = GameState.PLAYING
+
+                }
+            }
+
+            GameState.GAME_OVER -> {
 
             }
 
-            if (btm.containsTouch(
-                    event.x,
-                    event.y
-                )
-            ) {
+            GameState.SHOP -> {
 
-                gameStateAUX = gameState
-                selecao.sair = false
-                gameState = GameState.SELECAO
-
-                // gameState = GameState.PLAYING
-
+                lojaWAO.onTouchEvent(event)
             }
-        }
 
-        GameState.GAME_OVER -> {
+            GameState.SELECAO -> {
 
-        }
+                if (!selecao.sair) {
+                    selecao.onTouchEvent(event)
+                    if (selecao.sair) {
+                        carro.bitmap = selecao.listaMonters[selecao.index]
+                        carro.rodaF.bitmap = selecao.getRoda()
+                        carro.rodaT.bitmap = selecao.getRoda()
+                        gameState = GameState.PLAYING
+                    }
 
-        GameState.SHOP -> {
-
-            lojaWAO.onTouchEvent(event)
-        }
-
-        GameState.SELECAO -> {
-
-            if (!selecao.sair) {
-                selecao.onTouchEvent(event)
-                if (selecao.sair) {
+                } else {
                     carro.bitmap = selecao.listaMonters[selecao.index]
                     carro.rodaF.bitmap = selecao.getRoda()
                     carro.rodaT.bitmap = selecao.getRoda()
                     gameState = GameState.PLAYING
+
                 }
 
-            } else {
-                carro.bitmap = selecao.listaMonters[selecao.index]
-                carro.rodaF.bitmap = selecao.getRoda()
-                carro.rodaT.bitmap = selecao.getRoda()
-                gameState = GameState.PLAYING
 
             }
 
-
+            else -> {}
         }
-
-        else -> {}
     }
-}
 
 
-private fun Float.toDp(resources: Resources): Float {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        this,
-        resources.displayMetrics
-    )
-}
+    private fun Float.toDp(resources: Resources): Float {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            this,
+            resources.displayMetrics
+        )
+    }
 
 
-private fun spToPx(sp: Float): Float {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_SP,
-        sp,
-        context.resources.displayMetrics
-    )
-}
+    private fun spToPx(sp: Float): Float {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            sp,
+            context.resources.displayMetrics
+        )
+    }
 
 }
 

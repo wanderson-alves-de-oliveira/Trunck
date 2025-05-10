@@ -81,10 +81,13 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     init {
 
         carro.rotacao = 0f
-        carro.rodaT.x = (w / 2) + carro.largura
+        carro.rodaT.x = (w / 2) -75f
         carro.estacionado = true
         carro.rodaT.y = (h * 0.4f)
         carro.rodaF.y = (h * 0.5f)
+        carro.rodaF.x = carro.rodaT.x+150f
+
+        carro.garagem= true
         carregarlita()
 
 
@@ -132,11 +135,9 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
 
         offset = Offset(((w / 2) - fundo.width / 2).toFloat(), 0f)
 
-
-    }
+     }
 
     fun update() {
-
 
         carro.update(fundo, offset)
 
@@ -294,6 +295,8 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
                 carro.rodaF.y = -100f
                 carro.rodaT.velocityY = 140f
                 carro.rodaF.velocityY = 150f
+
+
                 if (!selectPneu) {
                     if (index >= listaMonters.size) {
                         index = 0

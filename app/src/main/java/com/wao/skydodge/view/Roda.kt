@@ -18,7 +18,7 @@ class Roda(context: Context) {
     var velocidadedoGiro = 0f
     var velocityY = 0f  // Velocidade vertical (gravidade)
     var gravity = 3.0f  // Constante de gravidade
-    private var lift = -25f
+    private var lift = -45f
     // Levantamento para impulsionar para cima
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565

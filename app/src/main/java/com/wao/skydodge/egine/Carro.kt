@@ -29,6 +29,7 @@ class Carro(context: Context) {
     var parou = false
     var acelerando = false
  var estacionado = false
+    var garagem = false
     var rotacao = 0f
     var largura = 0f
     var altura = 112.5f
@@ -253,25 +254,27 @@ class Carro(context: Context) {
     fun draw(canvas: Canvas) {
 
 
-       if(rotacao*-1<=50) {
+       if(rotacao*-1<=40) {
 
            canvas.save()
            canvas.rotate(rotacao * -0.2f, centerX, centerY)
-           canvas.drawLine(
-               pontoChassiTras.x,
-               pontoChassiTras.y,
-               (rodaT.x + (rodaT.largura * 0.5f)).toFloat(),
-               (rodaT.y + (rodaT.largura * 0.5f)).toFloat(),
-               paintAmortecedor
-           )
+           if(!garagem) {
+               canvas.drawLine(
+                   pontoChassiTras.x,
+                   pontoChassiTras.y,
+                   (rodaT.x + (rodaT.largura * 0.5f)).toFloat(),
+                   (rodaT.y + (rodaT.largura * 0.5f)).toFloat(),
+                   paintAmortecedor
+               )
 
-           canvas.drawLine(
-               pontoChassiFrente.x,
-               pontoChassiFrente.y,
-               (rodaF.x + (rodaT.largura * 0.5f)).toFloat(),
-               (rodaF.y + (rodaT.largura * 0.5f)).toFloat(),
-               paintAmortecedor
-           )
+               canvas.drawLine(
+                   pontoChassiFrente.x,
+                   pontoChassiFrente.y,
+                   (rodaF.x + (rodaT.largura * 0.5f)).toFloat(),
+                   (rodaF.y + (rodaT.largura * 0.5f)).toFloat(),
+                   paintAmortecedor
+               )
+           }
            rodaT.draw(canvas)
            rodaF.draw(canvas)
 
@@ -292,7 +295,13 @@ class Carro(context: Context) {
 
 
     }
+    fun pulo() {
 
+        rodaF.applyLift()
+        rodaT.applyLift()
+
+
+    }
     fun applyLift() {
 
     rodaF.velocidadedoGiro += 1
