@@ -15,6 +15,8 @@ class Fundo(val context: Context) {
     var mountainsY = 0f
     var mountainsSpeed = 0f
     var reduzindo = false
+
+    var bateu = false
     var distancia = 0
     var index2 = 1
     var index = 0
@@ -41,6 +43,12 @@ class Fundo(val context: Context) {
 
         }
 
+if(bateu){
+    mountainsSpeed+=0.5f
+    if(mountainsSpeed>=0){
+        bateu = false
+    }
+}
 
 
         mountainsX -= mountainsSpeed

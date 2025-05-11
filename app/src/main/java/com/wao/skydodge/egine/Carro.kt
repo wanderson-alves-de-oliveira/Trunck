@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
  import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.util.DisplayMetrics
 import androidx.compose.ui.geometry.Offset
 import com.wao.skydodge.R
@@ -251,6 +252,11 @@ class Carro(context: Context) {
         strokeWidth = 30f
         style = Paint.Style.STROKE
     }
+    val pp = Paint().apply{
+        color = Color.DKGRAY
+    }
+
+
     fun draw(canvas: Canvas) {
 
 
@@ -259,6 +265,19 @@ class Carro(context: Context) {
            canvas.save()
            canvas.rotate(rotacao * -0.2f, centerX, centerY)
            if(!garagem) {
+
+               canvas!!.drawRoundRect(
+                   RectF(
+                       pontoChassiTras.x,
+                       pontoChassiFrente.y,
+                       pontoChassiFrente.x+10f,
+                       pontoChassiFrente.y+40f
+                   ), 40f, 40f, pp
+               )
+
+
+
+
                canvas.drawLine(
                    pontoChassiTras.x,
                    pontoChassiTras.y,

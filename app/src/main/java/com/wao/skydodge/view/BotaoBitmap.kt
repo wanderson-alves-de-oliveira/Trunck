@@ -30,6 +30,15 @@ class BotaoBitmap(
      )
 
  }
+
+    fun trocarBtm(btm: Bitmap): Bitmap {
+        return Bitmap.createScaledBitmap(
+            btm,
+            (w).toInt(),
+            (h).toInt(),
+            false
+        )
+    }
     fun draw(canvas: Canvas ) {
          paint.textSize = spToPx(w*0.04f)
 

@@ -23,6 +23,7 @@ import com.wao.skydodge.db.BDSky
 import com.wao.skydodge.db.Base
 import com.wao.skydodge.ferramentas.Colisao
 import com.wao.skydodge.pistas.TrackRenderer
+import com.wao.skydodge.view.BotaoBitmap
 import com.wao.skydodge.view.BotaoM
 import com.wao.skydodge.view.Ceu
 import com.wao.skydodge.view.Fundo
@@ -175,7 +176,38 @@ class GameLoop(
         0,
         ultimaFase.toString()
     )
+    var acel: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pedal,options)
+    var acelb: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pedalb,options)
 
+    var oficina: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.oficina,options)
+    var pulo: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pulo,options)
+    var pulob: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pulob,options)
+
+
+    var btmAcel = BotaoBitmap(
+        this.context,
+        ((this.w * 0.8)).toFloat(),
+        (this.h * 0.76).toFloat(),
+        (this.w * 0.15).toInt(),
+        (this.w * 0.12).toInt(),
+        acel
+    )
+    var btmOficina = BotaoBitmap(
+        this.context,
+        ((this.w * 0.05)).toFloat(),
+        (this.h * 0.05).toFloat(),
+        (this.w * 0.1).toInt(),
+        (this.w * 0.05).toInt(),
+        oficina
+    )
+    var btmPulo = BotaoBitmap(
+        this.context,
+        ((this.w * 0.05)).toFloat(),
+        (this.h * 0.76).toFloat(),
+        (this.w * 0.12).toInt(),
+        (this.w * 0.10).toInt(),
+        pulo
+    )
     var walld: MutableList<Bitmap> = mutableListOf()
 
 
@@ -260,7 +292,7 @@ class GameLoop(
             fundo.update(trackRenderer)
             carroRival.update(fundo)
             carroRival1.update(fundo)
-            ; if (fundo.mountainsSpeed > 1) {
+             if (fundo.mountainsSpeed > 1) {
                 ceu.corremdo = true
             } else {
                 ceu.corremdo = false
@@ -306,10 +338,28 @@ class GameLoop(
                 it.snowmanVY *= -0.5f
 
             }
+            fundo.bateu = true
 
-            fundo.mountainsSpeed = -20f
+            when(ob[0].causa){
+                0->{
+                    fundo.mountainsSpeed = -20f
+                    carro.rotacao -= 30
+                }
+                1->{
+                    fundo.mountainsSpeed = -8f
+                    carro.rotacao -= 30
+                }
+                2->{
+                    fundo.mountainsSpeed = -12f
+                    carro.rotacao -= 30
+                }
+                3-> {
+                    fundo.mountainsSpeed += 20f
+                    carro.rotacao += 30
+                }
+            }
 
-            carro.rotacao -= 30
+
 
         }
 
@@ -337,51 +387,24 @@ class GameLoop(
             oppx[0].sumindo = true
 
 
-//           if(oppx[0].verirficarColisao(fundo)){
-//               oppx[0].snowmanVY = 0f
-//               oppx[0].snowmanVelocityX = 0f
-//               oppx[0].voar = false
-//             //  oppx[0].x = -200f
-////               oppx[0].snowmanVY *= -0.5f
-////
-////               if (kotlin.math.abs(oppx[0].snowmanVY) < 1f ) {
-////                   oppx[0].snowmanVY = 0f
-////                   oppx[0].snowmanVelocityX = 0f
-////                   oppx[0].voar = false
-////                   oppx[0].x = -200f
-////               }
-//
-//           }
-
 
         }
 
     }
 
     fun addRandomObstacle(fundo: Fundo, x: Float) {
-        var obstacleBitmap = BitmapFactory.decodeResource(
-            context.resources,
-            R.drawable.boneco
-        ) // substitua pela sua imagem
-        obstacleBitmap = Bitmap.createScaledBitmap(
-            obstacleBitmap,
-            (100).toInt(),
-            (180).toInt(),
-            false
-        )
+
 
         var obstaclex = Obstacle(
-            bitmap = obstacleBitmap,
+            bitmap = pulo,
             x = fundo.backgroundMountains.width.toFloat() + x,
-            y = 0f,
-            width = 100,
-            height = 180
+            y = 0f
         )
-
+        obstaclex.bitmap = obstaclex.pegarObj(context, 0)
 
         while (!obstaclex.verirficarColisao(fundo)) {
 
-            obstaclex.y += 100f
+            obstaclex.y += 150f
             //  obstaclex.girar()
         }
 
@@ -581,7 +604,9 @@ class GameLoop(
             paint.textSize = spToPx((this.w * 0.01f))
             canvas?.drawText(" ${(verificarPos()).toInt()}", 100f, 290f, paint)
             canvas?.drawText("Km: ${(fundo.distancia / 1000)}", 100f, 390f, paint)
-
+            btmAcel.draw(canvas!!)
+            btmOficina.draw(canvas!!)
+            btmPulo.draw(canvas!!)
         }
 
 
@@ -953,18 +978,33 @@ class GameLoop(
                     val pointerIndex = event.actionIndex
                     val pointerId = event.getPointerId(pointerIndex)
                     val x = event.getX(pointerIndex)
+                    val y = event.getY(pointerIndex)
 
-                    if (event.x > w * 0.8f) {
+                    if (btmOficina.containsTouch(
+                            x,
+                            y
+                        )
+                    ) {
                         selecao.sair = false
                         gameState = GameState.SELECAO
 
                     }
 
 
-                    if (x < w / 2f) {
+                    if (btmPulo.containsTouch(
+                            x,
+                            y
+                        )
+                    ){
                         activePointers[pointerId] = "left"
-                    } else {
+                        btmPulo.btm = btmPulo.trocarBtm(pulob)
+                    }else if (btmAcel.containsTouch(
+                             x,
+                             y
+                        )
+                    ) {
                         activePointers[pointerId] = "right"
+                        btmAcel.btm = btmAcel.trocarBtm(acelb)
                     }
                     updateActions()
                 }
@@ -973,6 +1013,8 @@ class GameLoop(
                     val pointerIndex = event.actionIndex
                     val pointerId = event.getPointerId(pointerIndex)
                     activePointers.remove(pointerId)
+                    val x = event.getX(pointerIndex)
+                    val y = event.getY(pointerIndex)
                     if (gameouver) {
                         gameouver = false
                         fundo.distancia = 0
@@ -981,11 +1023,23 @@ class GameLoop(
 
                         fundo.mountainsX2 = 0f //+ 1800
                     }
-                    if (event.getY(pointerIndex) < (h * 0.7f).toInt()) {
+                    if (btmPulo.containsTouch(
+                            x,
+                            y
+                        )
+                    ){
                         isJumping = false
+                        btmPulo.btm = btmPulo.trocarBtm(pulo)
+                    }
 
-                    } else {
+                    if (btmAcel.containsTouch(
+                            x,
+                            y
+                        )
+                    ){
                         isAccelerating = false
+                        btmAcel.btm = btmAcel.trocarBtm(acel)
+
                         carro.acelerando = true
                         fundo.reduzindo = true
                         carro.reduzindo = true
