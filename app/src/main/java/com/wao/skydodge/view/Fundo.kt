@@ -24,13 +24,10 @@ class Fundo(val context: Context) {
     lateinit var backgroundMountains2: Bitmap
     lateinit var texturaBitmap: Bitmap
     val trackRenderer = TrackRenderer(context)
-
+    var trackOffsetX = 0f
     var mountainsX2 = 0f
-    fun update(trackRenderer: TrackRenderer) {
-
-
-// No método de atualização:
-
+    fun update(trackRenderer: TrackRenderer, lastTimeMillis: Long) {
+        val deltaTime = lastTimeMillis / 1000f // converte para segundos
 
         if (reduzindo) {
             mountainsSpeed -= mountainsSpeed * 0.1f
@@ -38,54 +35,44 @@ class Fundo(val context: Context) {
                 mountainsSpeed = 0f
                 reduzindo = false
             }
-        } else if (mountainsSpeed > 90) {
-            mountainsSpeed = 90f
-
+        } else if (mountainsSpeed > 900f) {
+            mountainsSpeed = 900f
         }
 
-if(bateu){
-    mountainsSpeed+=0.5f
-    if(mountainsSpeed>=0){
-        bateu = false
-    }
-}
+        if (bateu) {
+            mountainsSpeed += 0.5f
+            if (mountainsSpeed >= 0f) {
+                bateu = false
+            }
+        }
 
+        val displacement = mountainsSpeed * deltaTime
 
-        mountainsX -= mountainsSpeed
-        mountainsX2 -= mountainsSpeed
-        mountainsXR -= mountainsSpeed
+        // Atualiza os deslocamentos com base no tempo real
+        trackOffsetX -= displacement
+        mountainsX -= displacement
+        mountainsX2 -= displacement
+        mountainsXR -= displacement
 
         trackRenderer.updateScroll(mountainsX)
 
-        distancia += mountainsSpeed.toInt()
+        distancia += displacement.toInt()
 
-        if (mountainsX <= -(backgroundMountains.width)) {
-            //   backgroundMountains = gerarBitmapOnduladoComTextura(context,(backgroundMountains.width).toInt(),backgroundMountains.height,texturaBitmap)
+        if (mountainsX <= -backgroundMountains.width) {
             index += 2
-            if (index > 12) {
-                index = 0
-            }
+            if (index > 12) index = 0
             backgroundMountains = trackRenderer.trackSegments[index]
-            //   backgroundMountains2 = drawTrack(canvas, track)
             mountainsX = mountainsX2 + backgroundMountains.width.toFloat()
-            //   mountainsX = 0f
-
         }
 
-        if (mountainsX2 <= -(backgroundMountains2.width)) {
+        if (mountainsX2 <= -backgroundMountains2.width) {
             index2 += 2
-            if (index2 > 11) {
-                index2 = 1
-            }
+            if (index2 > 11) index2 = 1
             backgroundMountains2 = trackRenderer.trackSegments[index2]
             mountainsX2 = mountainsX + backgroundMountains2.width.toFloat()
-            // mountainsX2 = 0f
-
-
         }
-
-
     }
+
 
     fun draw(canvas: Canvas) {
 

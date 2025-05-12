@@ -80,6 +80,12 @@ class Obstacle( bitmap:Bitmap,
         return false
     }
 
+    fun girarRand() {
+
+                giro =  (Random.nextInt(0, 361)).toFloat()
+
+
+    }
     fun girar() {
         if (!chegou) {
             if (giro < 360) {
@@ -91,13 +97,13 @@ class Obstacle( bitmap:Bitmap,
 
     }
 
-    fun update(scrollSpeed: Float) {
-
+    fun update(scrollSpeed: Float,lastTimeMillis:Long) {
+        val deltaTime = lastTimeMillis / 1000f
 
         if (voar) {
 
-            x += snowmanVelocityX
-            y += snowmanVY
+            x += snowmanVelocityX* deltaTime
+            y += snowmanVY* deltaTime
 
             snowmanVY += gravity
             snowmanVelocityX *= 0.98f
@@ -110,7 +116,7 @@ class Obstacle( bitmap:Bitmap,
             }
 
         } else {
-            x -= scrollSpeed
+            x -= scrollSpeed * deltaTime
         }
 
         if (sumindo) {

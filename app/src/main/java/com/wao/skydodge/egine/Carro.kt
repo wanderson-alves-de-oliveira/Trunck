@@ -260,7 +260,7 @@ class Carro(context: Context) {
     fun draw(canvas: Canvas) {
 
 
-       if(rotacao*-1<=40) {
+       if(rotacao*-1<=40 && rotacao*-1>=20) {
 
            canvas.save()
            canvas.rotate(rotacao * -0.2f, centerX, centerY)
@@ -274,9 +274,6 @@ class Carro(context: Context) {
                        pontoChassiFrente.y+40f
                    ), 40f, 40f, pp
                )
-
-
-
 
                canvas.drawLine(
                    pontoChassiTras.x,
@@ -299,6 +296,30 @@ class Carro(context: Context) {
 
            canvas.restore()
        }else{
+           canvas!!.drawRoundRect(
+               RectF(
+                   pontoChassiTras.x,
+                   pontoChassiFrente.y,
+                   pontoChassiFrente.x+10f,
+                   pontoChassiFrente.y+40f
+               ), 40f, 40f, pp
+           )
+
+           canvas.drawLine(
+               pontoChassiTras.x,
+               pontoChassiTras.y,
+               (rodaT.x + (rodaT.largura * 0.5f)).toFloat(),
+               (rodaT.y + (rodaT.largura * 0.5f)).toFloat(),
+               paintAmortecedor
+           )
+
+           canvas.drawLine(
+               pontoChassiFrente.x,
+               pontoChassiFrente.y,
+               (rodaF.x + (rodaT.largura * 0.5f)).toFloat(),
+               (rodaF.y + (rodaT.largura * 0.5f)).toFloat(),
+               paintAmortecedor
+           )
            rodaT.draw(canvas)
            rodaF.draw(canvas)
        }

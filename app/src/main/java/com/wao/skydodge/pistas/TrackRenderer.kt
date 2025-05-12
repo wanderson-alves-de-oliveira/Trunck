@@ -51,28 +51,26 @@ class TrackRenderer(private val context: Context) {
         val maxScroll = segmentWidth * segmentCount - segmentWidth
         scrollX = scrollX.coerceIn(0f, maxScroll.toFloat())
     }
+//
+//    fun draw(canvas: Canvas) {
+//        val screenWidth = canvas.width
+//        val screenHeight = canvas.height
+//
+//        val firstSegmentIndex = (scrollX / segmentWidth).toInt()
+//        val offsetInSegment = scrollX % segmentWidth
+//
+//        for (i in 0..1) {
+//            val index = firstSegmentIndex + i
+//            if (index >= trackSegments.size) continue
+//
+//            val bitmap = trackSegments[index]
+//
+//            val left = (i * segmentWidth - offsetInSegment).toInt()
+//            val right = left + segmentWidth
+//
+//            val dstRect = Rect(left, 0, right, screenHeight)
+//            canvas.drawBitmap(bitmap, null, dstRect, null)
+//        }
+//    }
 
-    fun draw(canvas: Canvas):Bitmap  {
-        val screenWidth = canvas.width
-        val screenHeight = canvas.height
-
-        val firstSegmentIndex = (scrollX / segmentWidth).toInt()
-        val offsetX = 0f
-        val bitmapx = trackSegments[0]
-        for (i in 0..1) {
-            val index = firstSegmentIndex + i
-            if (index >= segmentCount) continue
-
-            val bitmap = trackSegments[index]
-            val dstRect = Rect(
-                (offsetX + i * segmentWidth).toInt(),
-                0,
-                (offsetX + (i + 1) * segmentWidth).toInt(),
-                screenHeight
-            )
-            canvas.drawBitmap(bitmap, null, dstRect, null)
-            return bitmap
-        }
-return bitmapx
-    }
 }
