@@ -27,16 +27,15 @@ class Fundo(val context: Context) {
     var trackOffsetX = 0f
     var mountainsX2 = 0f
     fun update(trackRenderer: TrackRenderer, lastTimeMillis: Long) {
-        val deltaTime = lastTimeMillis / 1000f // converte para segundos
-
-        if (reduzindo) {
+        val deltaTime = lastTimeMillis / 100f // converte para segundos
+         if (reduzindo) {
             mountainsSpeed -= mountainsSpeed * 0.1f
             if (mountainsSpeed <= 0) {
                 mountainsSpeed = 0f
                 reduzindo = false
             }
-        } else if (mountainsSpeed > 900f) {
-            mountainsSpeed = 900f
+        } else if (mountainsSpeed > 90f) {
+            mountainsSpeed = 90f
         }
 
         if (bateu) {

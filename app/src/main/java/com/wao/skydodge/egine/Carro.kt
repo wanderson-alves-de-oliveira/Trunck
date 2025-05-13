@@ -21,10 +21,12 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Carro(context: Context) {
+class Carro(context: Context,
+            var h :Int ,
+            var w :Int ) {
     var colisao = Colisao()
-      var rodaF = Roda(context)
-      var rodaT = Roda(context)
+      var rodaF = Roda(context,(w*0.12f).toFloat(),(w*0.12f).toFloat())
+      var rodaT = Roda(context,(w*0.12f).toFloat(),(w*0.12f).toFloat())
      var screenHeight = 0
     var reduzindo = false
     var parou = false
@@ -33,27 +35,22 @@ class Carro(context: Context) {
     var garagem = false
     var rotacao = 0f
     var largura = 0f
-    var altura = 112.5f
+    var altura = 0f
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565
     }
     var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options)
     var alturaY = 112.5f
-    private val display: DisplayMetrics = context.resources.displayMetrics
-    private val h = display.heightPixels
-    private val w = display.widthPixels
+
 
     init {
-        rodaF.x = 800f
-        rodaT.x = 650f
+        rodaF.x =w*0.56f
+        rodaT.x = w*0.4f
 
          largura = (rodaT.x - (rodaF.x+(rodaT.largura*1.05f))).toFloat()
-         altura = 112.5f
+         altura = (rodaT.altura ).toFloat()
+        alturaY = altura
 
-
-
-
-      //  angle = atan2(deltaY, deltaX) // inclinação do terreno
          bitmap = Bitmap.createScaledBitmap(
             bitmap,
             (largura).toInt(),
@@ -61,27 +58,31 @@ class Carro(context: Context) {
             false
         )
     }
-
-
-    fun iniciarRodas() {
-        rodaF.screenHeight
-        rodaT.screenHeight
-    }
     var centerX = (rodaT.x + rodaF.x) / 2
     var centerY = (rodaT.y + rodaF.y) / 2
     var    pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.03f), centerY-(altura/1.8f), 60f, 30f, rotacao*-1.8f)
     var    pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/2.5f), -60f, 30f, rotacao*-1.8f)
 
+
+    fun iniciarRodas() {
+        rodaF.screenHeight = screenHeight
+        rodaT.screenHeight= screenHeight
+
+
+
+    }
+
     fun update(fundo: Bitmap,offset : Offset) {
         if(rodaF.x<rodaT.x){
             rodaF.x = rodaT.x+200
         }
+        var lastTime = System.currentTimeMillis()
+        val currentTime = System.currentTimeMillis()
+        val deltaTime = currentTime - lastTime
 
 
-
-
-    rodaF.update()
-        rodaT.update()
+    rodaF.update(deltaTime/ 1000f )
+        rodaT.update(deltaTime/ 1000f )
         if(reduzindo){
 
             rodaF.reduzindo = true
@@ -101,12 +102,14 @@ class Carro(context: Context) {
 
     }
 
-    fun update(fundo: Fundo) {
+    fun update(fundo: Fundo,lastTimeMillis:Long) {
+
+        val deltaTime = lastTimeMillis.toFloat()
         if(rodaF.x<rodaT.x){
             rodaF.x = rodaT.x+150
         }
-   rodaF.update()
-        rodaT.update()
+   rodaF.update(deltaTime)
+        rodaT.update(deltaTime)
         if(reduzindo){
 
             rodaF.reduzindo = true
@@ -126,7 +129,7 @@ class Carro(context: Context) {
             }
 
         }else if(!parou){
-            rotacao = calcularRotacaoEntreRodas(rodaT.y, rodaF.y, rodaT.x, rodaF.x)
+            rotacao = calcularRotacaoEntreRodas(rodaT.y, rodaF.y, rodaT.x, rodaF.x)*0.8f
         }
 
         verirficarColisao(fundo, rodaF)
@@ -169,7 +172,7 @@ class Carro(context: Context) {
             colidiu(roda)
 
         } else {
-            roda.gravity = 3.0f
+            roda.gravity = 5.0f
 
         }
 
@@ -179,8 +182,8 @@ class Carro(context: Context) {
 
         centerX = (rodaT.x + rodaF.x) / 2
         centerY = (rodaT.y + rodaF.y) / 2
-        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.02f), centerY-(altura/1.9f), 60f, 30f, rotacao *0.16f)
-        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.875f), -60f, 30f, rotacao *0.2f)
+        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.02f), centerY-(altura/1.9f), w*0.03f, h*0.03f, -rotacao )
+        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.875f), -(w*0.03f), h*0.03f, -rotacao  )
         alturaY = pontoChassiTras.y
     }
     fun verirficarColisao(fundo: Fundo, roda: Roda) {
@@ -223,7 +226,7 @@ class Carro(context: Context) {
             colidiu(roda,fundo)
         }
         else {
-            roda.gravity = 3.0f
+            roda.gravity = 5.0f
 
         }
 
@@ -268,12 +271,22 @@ class Carro(context: Context) {
 
                canvas!!.drawRoundRect(
                    RectF(
-                       pontoChassiTras.x,
-                       pontoChassiFrente.y,
-                       pontoChassiFrente.x+10f,
-                       pontoChassiFrente.y+40f
+                       pontoChassiTras.x-(w*0.01f),
+                       pontoChassiFrente.y-(w*0.01f),
+                       pontoChassiTras.x+(w*0.02f),
+                       pontoChassiFrente.y+(w*0.04f)
                    ), 40f, 40f, pp
                )
+               canvas!!.drawRoundRect(
+                   RectF(
+                       pontoChassiTras.x+(w*0.01f),
+                       pontoChassiFrente.y-(w*0.01f),
+                       pontoChassiFrente.x+(w*0.02f),
+                       pontoChassiFrente.y+(w*0.03f)
+                   ), 40f, 40f, pp
+               )
+
+
 
                canvas.drawLine(
                    pontoChassiTras.x,
@@ -298,13 +311,20 @@ class Carro(context: Context) {
        }else{
            canvas!!.drawRoundRect(
                RectF(
-                   pontoChassiTras.x,
-                   pontoChassiFrente.y,
-                   pontoChassiFrente.x+10f,
-                   pontoChassiFrente.y+40f
+                   pontoChassiTras.x-(w*0.01f),
+                   pontoChassiFrente.y-(w*0.01f),
+                   pontoChassiTras.x+(w*0.02f),
+                   pontoChassiFrente.y+(w*0.04f)
                ), 40f, 40f, pp
            )
-
+           canvas!!.drawRoundRect(
+               RectF(
+                   pontoChassiTras.x+(w*0.01f),
+                   pontoChassiFrente.y-(w*0.01f),
+                   pontoChassiFrente.x+(w*0.02f),
+                   pontoChassiFrente.y+(w*0.03f)
+               ), 40f, 40f, pp
+           )
            canvas.drawLine(
                pontoChassiTras.x,
                pontoChassiTras.y,
@@ -327,9 +347,12 @@ class Carro(context: Context) {
 
         canvas.save()
         canvas.rotate(rotacao*-1.0f, centerX, centerY)
+        if(!garagem) {
+            canvas.drawBitmap(bitmap, rodaT.x, centerY - (altura ), null)
+        }else{
+            canvas.drawBitmap(bitmap, rodaT.x+(w*0.02f), centerY - (altura * 0.8f), null)
 
-        canvas.drawBitmap(bitmap, rodaT.x, centerY-(altura*0.8f), null)
-
+        }
 
         canvas.restore()
 

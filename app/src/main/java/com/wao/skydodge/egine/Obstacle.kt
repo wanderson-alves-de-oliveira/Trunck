@@ -98,7 +98,8 @@ class Obstacle( bitmap:Bitmap,
     }
 
     fun update(scrollSpeed: Float,lastTimeMillis:Long) {
-        val deltaTime = lastTimeMillis / 1000f
+        val deltaTime = lastTimeMillis / 100f // converte para segundos
+
 
         if (voar) {
 

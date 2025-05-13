@@ -7,35 +7,39 @@ import android.graphics.Canvas
 
  import com.wao.skydodge.R
 
-class Roda(context: Context) {
+private const val fl = 9.0f
+
+class Roda(context: Context,
+           var largura :Float= 112.5f,
+           var altura :Float= 112.5f) {
     var reduzindo = false
-    var x =500f
-    var y = 250f
-    var largura = 112.5
-    var altura = 112.5
+    var x = 0f
+    var y =  0f
+
      var giro = 0f
     private var speed = 20f
     var velocidadedoGiro = 0f
     var velocityY = 0f  // Velocidade vertical (gravidade)
-    var gravity = 3.0f  // Constante de gravidade
-    private var lift = -45f
+    var gravity = 5.0f  // Constante de gravidade
+
     // Levantamento para impulsionar para cima
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565
     }
     private var bitmapx: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.rodac,options)
+
     var bitmap = Bitmap.createScaledBitmap(
     bitmapx,
-    (112.5).toInt(),
-    (112.5).toInt(),
+    (largura).toInt(),
+    (altura).toInt(),
     false
     )
     var screenHeight =0
-
+    private var lift = -9f
     init {
         // Redimensiona a imagem do avião para o tamanho padrão
-        bitmap = resizeBitmap(bitmap, (112.5).toInt(), (112.5).toInt())
-
+        bitmap = resizeBitmap(bitmap, (largura).toInt(), (altura).toInt())
+         lift = -(altura*0.75f)
     }
 
 
@@ -43,7 +47,7 @@ class Roda(context: Context) {
     // Método chamado para aplicar o impulso para cima
     fun applyLift() {
         velocityY = lift
-        gravity = 3.0f
+        gravity = 5.0f
         //giroUP()
     }
 
@@ -55,7 +59,7 @@ class Roda(context: Context) {
     }
 
     // Atualiza a posição do avião com base na velocidade e na gravidade
-    fun update() {
+    fun update(deltaTime: Float) {
         // Aplica a gravidade: aumenta a velocidade vertical
 
         velocityY += gravity

@@ -13,8 +13,9 @@ import com.wao.skydodge.R
 import com.wao.skydodge.egine.Carro
 
 class Selecao(val context: Context, val w: Int, val h: Int) {
-
-    var carro = Carro(context)
+    val tw = w/1.5f
+    val th = w*0.35f
+    var carro = Carro(context,w,h)
     var offset: Offset = Offset(0f, 0f)
     var listaMonters: MutableList<Bitmap> = mutableListOf()
     var listaPneus: MutableList<Bitmap> = mutableListOf()
@@ -33,6 +34,8 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
     var start: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.start,options)
     var pneu: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pneu,options)
     var truck: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.truck,options)
+
+
     var loja: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.loja,options)
 
 
@@ -80,16 +83,19 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
 
     init {
 
+
+
+
         carro.rotacao = 0f
         carro.rodaT.x = (w / 2) -75f
         carro.estacionado = true
         carro.rodaT.y = (h * 0.4f)
         carro.rodaF.y = (h * 0.5f)
-        carro.rodaF.x = carro.rodaT.x+150f
+        carro.rodaF.x = carro.rodaT.x+(tw*0.085f)
 
         carro.garagem= true
         carregarlita()
-
+        carro.bitmap = listaMonters[index]
 
         var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.nuven,options)
         var n = Bitmap.createScaledBitmap(
@@ -174,12 +180,35 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
         )
 
     }
+    fun getRoda(i:Int) : Bitmap{
+        return  Bitmap.createScaledBitmap(
+            listaPneus[i],
+            (carro.rodaT.altura).toInt(),
+            (carro.rodaT.altura).toInt(),
+            false
+        )
 
+    }
+    fun inserirIMGR(bitmap: Bitmap):Bitmap {
+
+        val tw = carro.largura/1.5f
+        val th = carro.largura*0.35f
+        return   Bitmap.createScaledBitmap(
+            bitmap,
+            (tw).toInt(),
+            -(th).toInt(),
+            false
+        )
+
+    }
     fun inserirIMG(bitmap: Bitmap) {
+
+        val tw = carro.largura/1.5f
+        val th = carro.largura*0.35f
         var bitmapx = Bitmap.createScaledBitmap(
             bitmap,
-            (carro.largura).toInt(),
-            (carro.altura).toInt(),
+            (tw).toInt(),
+            -(th).toInt(),
             false
         )
         listaMonters.add(bitmapx)

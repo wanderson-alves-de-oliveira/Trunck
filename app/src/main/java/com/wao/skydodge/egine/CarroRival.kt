@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
  import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.util.DisplayMetrics
 import androidx.compose.ui.geometry.Offset
 import com.wao.skydodge.R
@@ -20,10 +21,11 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class CarroRival(context: Context) {
+class CarroRival(context: Context,
+                 var h :Int ,
+                 var w :Int) {
     var colisao = Colisao()
-      var rodaF = Roda(context)
-      var rodaT = Roda(context)
+
      var screenHeight = 0
     var reduzindo = false
     var reduzindoR = false
@@ -35,23 +37,25 @@ class CarroRival(context: Context) {
     var velocidadeR = 0f
     var rotacao = 0f
     var largura = 0f
-    var altura = 112.5f
+    var altura = 0f
     val options = BitmapFactory.Options().apply {
         inPreferredConfig = Bitmap.Config.RGB_565
     }
     var bitmap: Bitmap =  BitmapFactory.decodeResource(context.resources, R.drawable.chassia,options)
-    var alturaY = 112.5f
-    private val display: DisplayMetrics = context.resources.displayMetrics
-    private val h = display.heightPixels
-    private val w = display.widthPixels
-   var  f= 800f
-    var t = 650f
+    var alturaY = 0f
+
+    var rodaF = Roda(context,(w*0.12f).toFloat(),(w*0.12f).toFloat())
+    var rodaT = Roda(context,(w*0.12f).toFloat(),(w*0.12f).toFloat())
+   var  f= w*0.56f
+    var t = w*0.4f
+    val tamanha = w*0.54f - w*0.4f
     init {
-        rodaF.x = f
-        rodaT.x = t
+        rodaF.x =w*0.56f
+        rodaT.x = w*0.4f
 
          largura = (rodaT.x - (rodaF.x+(rodaT.largura*1.05f))).toFloat()
-         altura = 112.5f
+        altura = (rodaT.altura ).toFloat()
+        alturaY = altura
 
          bitmap = Bitmap.createScaledBitmap(
             bitmap,
@@ -62,6 +66,8 @@ class CarroRival(context: Context) {
     }
 
 fun moverX(vel : Float){
+
+
     rodaF.x+=vel
     rodaT.x+=vel
 
@@ -69,8 +75,9 @@ fun moverX(vel : Float){
     rodaT.velocidadedoGiro += 1
 }
     fun iniciarRodas() {
-        rodaF.screenHeight
-        rodaT.screenHeight
+        rodaF.screenHeight = screenHeight
+        rodaT.screenHeight= screenHeight
+
     }
 
     var centerX = (rodaT.x + rodaF.x) / 2
@@ -80,11 +87,13 @@ fun moverX(vel : Float){
 
 
     fun update(fundo: Bitmap,offset : Offset) {
-
-        rodaF.update()
-        rodaT.update()
+        var lastTime = System.currentTimeMillis()
+        val currentTime = System.currentTimeMillis()
+        val deltaTime = currentTime - lastTime
+        rodaF.update(deltaTime/ 100f)
+        rodaT.update(deltaTime/ 100f)
         if(rodaF.x<rodaT.x){
-            rodaF.x = rodaT.x+150
+            rodaF.x = rodaT.x+tamanha
         }
 
         if(reduzindo){
@@ -104,11 +113,12 @@ fun moverX(vel : Float){
         verirficarColisao(fundo,offset, rodaT)
 ajustDraw()
     }
-    fun update(fundo: Fundo) {
+    fun update(fundo: Fundo,lastTimeMillis:Long) {
 
+        val deltaTime = lastTimeMillis.toFloat()
         if(inicio) {
             if(rodaF.x<rodaT.x){
-                rodaF.x = rodaT.x+150
+                rodaF.x = rodaT.x+tamanha
             }
 
 
@@ -132,13 +142,15 @@ ajustDraw()
                 }
             }
 
-
-            moverX(velocidadeX)
-            km += velocidadeX
+            val displacement = velocidadeX *( deltaTime/ 100f)
+            moverX(displacement)
+            km += displacement
 
         }
-        rodaF.update()
-        rodaT.update()
+
+
+        rodaF.update(deltaTime/ 1000f)
+        rodaT.update(deltaTime/ 1000f)
         if(reduzindo){
 
             rodaF.reduzindo = true
@@ -178,8 +190,8 @@ ajustDraw()
             rodaF.y = 50f
 
         }else{
-            rodaT.gravity = 3.0f
-            rodaF.gravity = 3.0f
+            rodaT.gravity = 5.0f
+            rodaF.gravity = 5.0f
         }
 
 
@@ -219,7 +231,7 @@ ajustDraw()
             colidiu(roda)
 
         } else {
-            roda.gravity = 3.0f
+            roda.gravity = 5.0f
 
         }
 
@@ -266,7 +278,7 @@ ajustDraw()
             colidiu(roda)
         }
         else {
-            roda.gravity = 3.0f
+            roda.gravity = 5.0f
 
         }
 
@@ -288,8 +300,8 @@ ajustDraw()
 
         centerX = (rodaT.x + rodaF.x) / 2
         centerY = (rodaT.y + rodaF.y) / 2
-        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.02f), centerY-(altura/1.9f), 60f, 30f, rotacao *0.16f)
-        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.875f), -60f, 30f, rotacao *0.2f)
+        pontoChassiFrente = pontoNoChassi(rodaF.x-(w*0.02f), centerY-(altura/1.9f), w*0.03f, h*0.03f, -rotacao )
+        pontoChassiTras = pontoNoChassi(rodaT.x+(w*0.08f), centerY-(altura/1.875f), -(w*0.03f), h*0.03f, -rotacao  )
         alturaY = pontoChassiTras.y
     }
     fun pontoNoChassi(carroX: Float, carroY: Float, offsetX: Float, offsetY: Float, angulo: Float): PointF {
@@ -312,6 +324,24 @@ ajustDraw()
 
            canvas.save()
            canvas.rotate(rotacao * -0.2f, centerX, centerY)
+
+           canvas!!.drawRoundRect(
+               RectF(
+                   pontoChassiTras.x-(w*0.01f),
+                   pontoChassiFrente.y-(w*0.01f),
+                   pontoChassiTras.x+(w*0.01f),
+                   pontoChassiFrente.y+(w*0.04f)
+               ), 40f, 40f, paintAmortecedor
+           )
+           canvas!!.drawRoundRect(
+               RectF(
+                   pontoChassiTras.x,
+                   pontoChassiFrente.y-(w*0.01f),
+                   pontoChassiFrente.x+(w*0.01f),
+                   pontoChassiFrente.y+(w*0.03f)
+               ), 40f, 40f, paintAmortecedor
+           )
+
            canvas.drawLine(
                pontoChassiTras.x,
                pontoChassiTras.y,
@@ -340,7 +370,7 @@ ajustDraw()
         canvas.save()
         canvas.rotate(rotacao*-1.0f, centerX, centerY)
 
-        canvas.drawBitmap(bitmap, rodaT.x, centerY-(altura*0.8f), null)
+        canvas.drawBitmap(bitmap, rodaT.x, centerY-(altura), null)
 
 
         canvas.restore()
