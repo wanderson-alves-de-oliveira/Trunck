@@ -162,10 +162,10 @@ class GameView(
                             println("Erro ao exibir o anúncio: ${adError.message}")
 
                             if (networkReceiver.temInternet) {
-                                gameLoop.perdeuL.internetR = "Carregando..."
+                                //gameLoop.perdeuL.internetR = "Carregando..."
 
                             } else {
-                                gameLoop.perdeuL.internetR = "Sem internet"
+                               // gameLoop.perdeuL.internetR = "Sem internet"
                                 gameLoop.semInternet = true
                             }
                         }
@@ -178,10 +178,10 @@ class GameView(
             println("AdMob: Nenhum anúncio disponível, tentando recarregar...")
             gameLoop.semInternet = true
             if (networkReceiver.temInternet) {
-                gameLoop.perdeuL.internetR = "Carregando..."
+              //  gameLoop.perdeuL.internetR = "Carregando..."
 
             } else {
-                gameLoop.perdeuL.internetR = "Sem internet"
+              //  gameLoop.perdeuL.internetR = "Sem internet"
                 gameLoop.semInternet = true
 
             }

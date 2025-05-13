@@ -131,6 +131,27 @@ class Obstacle( bitmap:Bitmap,
 
     }
 
+    fun pegarObjF(context: Context ,height:Int,width:Int): Bitmap {
+        var obstacleBitmap = BitmapFactory.decodeResource(
+            context.resources,
+            R.drawable.chegada
+        ) // substitua pela sua imagem
+
+        this.height =height
+        this.width =width
+        causa = 5
+        obstacleBitmap = Bitmap.createScaledBitmap(
+            obstacleBitmap,
+            width,
+            height,
+            false
+        )
+
+
+        return obstacleBitmap
+    }
+
+
     fun pegarObj(context: Context, modo: Int): Bitmap {
         var obstacleBitmap = BitmapFactory.decodeResource(
             context.resources,
