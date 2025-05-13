@@ -82,6 +82,13 @@ class GameLoop(
         BitmapFactory.decodeResource(context.resources, R.drawable.carrinho, options)
     private var noadsP = BitmapFactory.decodeResource(context.resources, R.drawable.noads, options)
     private var coin = BitmapFactory.decodeResource(context.resources, R.drawable.moeda, options)
+      var diplay = BitmapFactory.decodeResource(context.resources, R.drawable.display, options)
+    private val diplayP = Bitmap.createScaledBitmap(
+        diplay,
+        (w *1.2f ).toInt(),
+        (h).toInt(),
+        false
+    )
     private val coinP = Bitmap.createScaledBitmap(
         coin,
         ((w * 0.1f)).toInt(),
@@ -146,10 +153,10 @@ class GameLoop(
 
     var btmAcel = BotaoBitmap(
         this.context,
-        ((this.w * 0.8)).toFloat(),
+        ((this.w * 0.85)).toFloat(),
         (this.h * 0.76).toFloat(),
-        (this.w * 0.15).toInt(),
         (this.w * 0.12).toInt(),
+        (this.w * 0.10).toInt(),
         acel
     )
     var btmOficina = BotaoBitmap(
@@ -162,7 +169,7 @@ class GameLoop(
     )
     var btmPulo = BotaoBitmap(
         this.context,
-        ((this.w * 0.05)).toFloat(),
+        ((this.w * 0.04)).toFloat(),
         (this.h * 0.76).toFloat(),
         (this.w * 0.12).toInt(),
         (this.w * 0.10).toInt(),
@@ -258,6 +265,9 @@ class GameLoop(
             if (obstacles[0].caiu == false) {
                 obstacles[0].y -= 10f
                 obstacles[0].caiu = !(obstacles[0].verirficarColisao(fundo))
+                if (obstacles[0].caiu) {
+                    obstacles[0].y += 10f
+                }
             }
         }
         var oppx = obstacles.filter { it.voar }
@@ -316,19 +326,19 @@ class GameLoop(
             when(ob[0].causa){
                 0->{
                     fundo.mountainsSpeed = fundo.mountainsSpeed*0.5f
-                    carro.rotacao -= 30
+
                 }
                 1->{
                     fundo.mountainsSpeed = fundo.mountainsSpeed*0.6f
-                    carro.rotacao -= 30
+
                 }
                 2->{
                     fundo.mountainsSpeed = fundo.mountainsSpeed*0.7f
-                    carro.rotacao -= 30
+
                 }
                 3-> {
-                    fundo.mountainsSpeed = fundo.mountainsSpeed*1.5f
-                    carro.rotacao += 30
+                    fundo.mountainsSpeed = fundo.mountainsSpeed*0.8f
+
                 }
             }
         }
@@ -487,14 +497,8 @@ class GameLoop(
 
 
 
-            canvas!!.drawRoundRect(
-                RectF(
-                   0f,
-                    0f,
-                    w.toFloat(),
-                    h.toFloat()
-                ), 0f, 0f, paint2
-            )
+
+            canvas?.drawBitmap(diplayP,0f,0f,null)
             canvas?.drawBitmap(tela,((w/2)-tela.width/2).toFloat(),0f,null)
             btmAcel.draw(canvas!!)
             btmOficina.draw(canvas!!)

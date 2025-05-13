@@ -39,7 +39,7 @@ class Roda(context: Context,
     init {
         // Redimensiona a imagem do avião para o tamanho padrão
         bitmap = resizeBitmap(bitmap, (largura).toInt(), (altura).toInt())
-         lift = -(altura*0.75f)
+         lift = -(altura*0.70f)
     }
 
 
