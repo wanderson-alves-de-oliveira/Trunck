@@ -242,17 +242,18 @@ class GameLoop(
                 carro.pulo()
             }
             carro.update(fundo, deltaTime)
-            runBlocking {
-                launch(Dispatchers.Default) {
+
                     updateOB(deltaTime)
-                }
-            }
+
+
             updateCameraOffset(carro.rodaT.y)
             fundo.update(trackRenderer, deltaTime)
             carroRival.update(fundo, deltaTime)
             carroRival1.update(fundo, deltaTime)
             if (fundo.mountainsSpeed > 1) {
                 ceu.corremdo = true
+                ceu.skySpeed=fundo.mountainsSpeed*0.1f
+                ceu.cloudsSpeed=fundo.mountainsSpeed*0.2f
             } else {
                 ceu.corremdo = false
             }
@@ -279,31 +280,61 @@ class GameLoop(
     }
 
     private fun updateOB(deltaTime: Long) {
-        impactoPrincipal(deltaTime)
-        impactoRival(carroRival)
-        impactoRival(carroRival1)
-        var opp = obstacles.filter { it.x < -100 }
-        if (opp.isNotEmpty()) {
-            obstacles.removeAll(opp)
-            addRandomObstacle(fundo, 0f)
-        }
-        if (obstacles.isNotEmpty()) {
-            if (obstacles[0].caiu == false) {
-                obstacles[0].y -= 10f
-                obstacles[0].caiu = !(obstacles[0].verirficarColisao(fundo))
-                if (obstacles[0].caiu) {
-                    obstacles[0].y += 10f
-                }
+
+        runBlocking {
+            launch(Dispatchers.Default) {
+
+                impactoPrincipal(deltaTime)
+            }
+
+            launch(Dispatchers.Default) {
+
+                impactoRival(carroRival)
+            }
+
+            launch(Dispatchers.Default) {
+
+                impactoRival(carroRival1)
             }
         }
 
+        var opp = obstacles.filter { it.x < -100 }
+        if (opp.isNotEmpty()) {
+//            obstacles.removeAll(opp)
+           //addRandomObstacle(fundo, 0f)
 
+            var obstaclex = Obstacle(
+                bitmap = pulo,
+                x = fundo.backgroundMountains.width.toFloat()  ,
+                y = 0f
+            )
+            obstaclex.bitmap = obstaclex.pegarObj(context, 0)
 
-        var oppx = obstacles.filter { it.voar }
-        if (oppx.isNotEmpty()) {
-            oppx[0].giro += oppx[0].snowmanVelocityX
-            oppx[0].sumindo = true
+            obstacles[0] = obstaclex
         }
+        if (obstacles.isNotEmpty()) {
+            if (obstacles[0].chegou && obstacles[0].caiu == false) {
+                obstacles[0].y -= w*0.023f
+                obstacles[0].caiu = !(obstacles[0].verirficarColisao(fundo))
+                if (obstacles[0].caiu) {
+                    obstacles[0].y += w*0.025f
+                }
+            }else if (!obstacles[0].chegou) {
+                obstacles[0].y  += 150f
+                obstacles[0].chegou = obstacles[0].verirficarColisao(fundo)
+            }
+
+           // var oppx = obstacles.filter { it.voar }
+            if (obstacles[0].voar) {
+                obstacles[0].giro += obstacles[0].snowmanVelocityX
+                obstacles[0].sumindo = true
+            }
+
+        }
+
+
+
+
     }
 
     private fun impactoRival(carro: CarroRival) {
@@ -398,10 +429,10 @@ class GameLoop(
         )
         obstaclex.bitmap = obstaclex.pegarObj(context, 0)
 
-        while (!obstaclex.verirficarColisao(fundo)) {
-            obstaclex.y += 150f
-        }
-        obstaclex.chegou = true
+//        while (!obstaclex.verirficarColisao(fundo)) {
+//            obstaclex.y += 150f
+//        }
+//        obstaclex.chegou = true
         obstacles.add(obstaclex)
     }
 

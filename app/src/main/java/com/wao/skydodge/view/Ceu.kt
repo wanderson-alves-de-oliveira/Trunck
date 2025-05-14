@@ -19,8 +19,8 @@ class Ceu (val context: Context){
     var cloudsX = 0f
 
 
-     val skySpeed = 1f
-    val cloudsSpeed = 3f
+     var skySpeed = 1f
+    var cloudsSpeed = 3f
      var corremdo = false
     var distancia = 0
     lateinit var backgroundSky: Bitmap
