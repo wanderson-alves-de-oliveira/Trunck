@@ -31,14 +31,22 @@ class Venceu(
 
     var cartaz: Bitmap =
         BitmapFactory.decodeResource(context.resources, R.drawable.cartazp, options)
-
+    var cartazl: Bitmap =
+        BitmapFactory.decodeResource(context.resources, R.drawable.cartazl, options)
     val largura = w
     val altura = h
     var carroX = Bitmap.createBitmap(largura, altura, Bitmap.Config.ARGB_8888)
     val canvas2 = Canvas(carroX)
     var tirouFoto = false
+    var venceu = false
     private val cartazP = Bitmap.createScaledBitmap(
         cartaz,
+        ((w * 0.4f)).toInt(),
+        ((w * 0.5f)).toInt(),
+        false
+    )
+    private val cartazlP = Bitmap.createScaledBitmap(
+        cartazl,
         ((w * 0.4f)).toInt(),
         ((w * 0.5f)).toInt(),
         false
@@ -64,7 +72,6 @@ class Venceu(
 
     fun tirarFoto() {
         //    if(!tirouFoto){
-
 
 
         var pozx = (carro.centerX) - (carro.largura)
@@ -133,14 +140,13 @@ class Venceu(
 
         bb = Bitmap.createScaledBitmap(
             bb,
-        (bb.width*0.60f).toInt(),
-        (bb.height*0.60f).toInt(),
-        false
-    )
+            (bb.width * 0.60f).toInt(),
+            (bb.height * 0.60f).toInt(),
+            false
+        )
 
         return bb
     }
-
 
 
     fun draw(canvas: Canvas) {
@@ -157,14 +163,30 @@ class Venceu(
 
         paint.colorFilter = ColorMatrixColorFilter(colorMatrix)
 
+        if (venceu) {
+            canvas.drawBitmap(
+                cartazP,
+                (offset.x / 2) - (cartazP.width / 2).toFloat(),
+                (h / 2) - (cartazP.height / 2).toFloat(),
+                null
+            )
+        } else {
+            canvas.drawBitmap(
+                cartazlP,
+                (offset.x / 2) - (cartazP.width / 2).toFloat(),
+                (h / 2) - (cartazP.height / 2).toFloat(),
+                null
+            )
+        }
+
+
 
         canvas.drawBitmap(
-            cartazP,
-            (offset.x / 2) - (cartazP.width / 2).toFloat(),
-            (h / 2) - (cartazP.height / 2).toFloat(),
-            null
+            carroX,
+            ((offset.x * 0.5f) - carroX.width / 2).toFloat(),
+            (h * 0.50f).toFloat(),
+            paint
         )
-        canvas.drawBitmap(carroX, ((offset.x * 0.5f)-carroX.width/2).toFloat(), (h * 0.50f).toFloat(), paint)
 
 
 

@@ -264,7 +264,10 @@ class GameLoop(
         }
         if((carro.rodaF.x)>=final.x+final.width && verificarPos()==1){
           venceu = true
-//fundo.mountainsSpeed=0f
+            venceuP.venceu = true
+         }else if((carro.rodaF.x)>=final.x+final.width && verificarPos()!=1){
+            venceu = true
+            venceuP.venceu = false
         }
 
 
@@ -758,17 +761,21 @@ class GameLoop(
             false
         )
         var cxx: Bitmap =
-            BitmapFactory.decodeResource(context.resources, R.drawable.bitmapb, options)
+            BitmapFactory.decodeResource(context.resources, R.drawable.bitmap, options)
         var cxs = Bitmap.createScaledBitmap(
             cxx,
-            (tw).toInt(),
-            (th).toInt(),
+            (w*24).toInt(),
+            (h).toInt(),
             false
         )
         trackRenderer.loadTrackSegments(((tw * 1.5f).toInt()), th.toInt())
         ceu.backgroundClouds = n
-        fundo.backgroundMountains = trackRenderer.trackSegments[0]
-        fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+//        fundo.backgroundMountains = trackRenderer.trackSegments[0]
+//        fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+
+
+        fundo.backgroundMountains = cxs
+        fundo.backgroundMountains2 = cxs
         fundo.texturaBitmap = cxs
         ceu.backgroundSky = c
         fundo.mountainsX = 0f

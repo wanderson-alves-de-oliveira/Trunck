@@ -84,8 +84,8 @@ class Roda(context: Context,
             giro = velocidadedoGiro
         }
         // Impede que o avião caia para fora da tela (evitar que saia da tela para baixo)
-        if (y > screenHeight - bitmap.height && screenHeight>0) {
-            y = screenHeight - bitmap.height.toFloat()
+        if (y > screenHeight + bitmap.height && screenHeight>0) {
+            y = screenHeight + bitmap.height.toFloat()
             velocityY = 0f  // Para de cair ao atingir o fundo
         }
 
