@@ -202,6 +202,7 @@ class GameLoop(
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun run() {
         init()
+
         while (running) {
             val currentTime = System.currentTimeMillis()
             val deltaTime = currentTime - lastTime
@@ -260,9 +261,9 @@ class GameLoop(
                 selecao.update()
             }
         }
-        if((carro.rodaF.x)>=final.x+final.width && verificarPos()!=1){
+        if((carro.rodaF.x)>=final.x+final.width && verificarPos()==1){
           venceu = true
-fundo.mountainsSpeed=0f
+//fundo.mountainsSpeed=0f
         }
 
 
@@ -748,9 +749,10 @@ fundo.mountainsSpeed=0f
 
         final.bitmap = final.pegarObjF(context, (tw/2).toInt(), (tw/3.5).toInt())
         final.y=-final.bitmap.height.toFloat()
-        final.x = (w*1.5).toFloat()
+        final.x = (w*22f).toFloat()
         final.caiu = false
         venceu=false
+
         addRandomObstacle(fundo, 0f)
     }
 
@@ -1076,12 +1078,14 @@ fundo.mountainsSpeed=0f
                         carroRival1.rodaT.bitmap = selecao.getRoda(0)
 
                         gameState = GameState.PLAYING
+                        venceuP.tirarFoto()
                     }
                 } else {
                     carro.bitmap = inserirIMG(selecao.listaMonters[selecao.index])
                     carro.rodaF.bitmap = selecao.getRoda()
                     carro.rodaT.bitmap = selecao.getRoda()
                     gameState = GameState.PLAYING
+                    venceuP.tirarFoto()
                 }
             }
 
