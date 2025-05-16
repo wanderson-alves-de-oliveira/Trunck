@@ -245,6 +245,83 @@ class Obstacle( bitmap:Bitmap,
 
             }
 
+            1 -> {
+
+                val i = Random.nextInt(0, 4)
+                when (i) {
+                    0 -> {
+                        causa = 0
+                        height =160
+                        width =160
+                        var obstacleBitmap = BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.bola
+                        ) // substitua pela sua imagem
+                        obstacleBitmap = Bitmap.createScaledBitmap(
+                            obstacleBitmap,
+                            (100).toInt(),
+                            (180).toInt(),
+                            false
+                        )
+                        return obstacleBitmap
+                    }
+
+                    1 -> {
+                        causa = 1
+                        height =100
+                        width =100
+                        var obstacleBitmap = BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.caixa
+                        ) // substitua pela sua imagem
+                        obstacleBitmap = Bitmap.createScaledBitmap(
+                            obstacleBitmap,
+                            (100).toInt(),
+                            (100).toInt(),
+                            false
+                        )
+                        return obstacleBitmap
+                    }
+
+                    2 -> {
+                        causa = 2
+                        height =110
+                        width =90
+                        var obstacleBitmap = BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.barril
+                        ) // substitua pela sua imagem
+                        obstacleBitmap = Bitmap.createScaledBitmap(
+                            obstacleBitmap,
+                            (90).toInt(),
+                            (110).toInt(),
+                            false
+                        )
+                        return obstacleBitmap
+                    }
+
+
+                    3 -> {
+                        causa = 3
+                        height =90
+                        width =70
+                        var obstacleBitmap = BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.gas
+                        ) // substitua pela sua imagem
+                        obstacleBitmap = Bitmap.createScaledBitmap(
+                            obstacleBitmap,
+                            (70).toInt(),
+                            (90).toInt(),
+                            false
+                        )
+                        return obstacleBitmap
+                    }
+
+                }
+
+            }
+
 
         }
 

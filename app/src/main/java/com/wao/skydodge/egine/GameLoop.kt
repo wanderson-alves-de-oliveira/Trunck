@@ -128,6 +128,7 @@ class GameLoop(
     private var timePress = 0
     private val b3: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     var score = 0
+    var modo = 0
     private var valorminimo = 300
     private var luzP = 0
     private var imaP = 0
@@ -265,6 +266,11 @@ class GameLoop(
         if((carro.rodaF.x)>=final.x+final.width && verificarPos()==1){
           venceu = true
             venceuP.venceu = true
+            if(modo>=1){
+                modo=0
+            }else{
+                modo++
+            }
          }else if((carro.rodaF.x)>=final.x+final.width && verificarPos()!=1){
             venceu = true
             venceuP.venceu = false
@@ -311,7 +317,7 @@ class GameLoop(
                 x = fundo.backgroundMountains.width.toFloat()  ,
                 y = 0f
             )
-            obstaclex.bitmap = obstaclex.pegarObj(context, 0)
+            obstaclex.bitmap = obstaclex.pegarObj(context, modo)
 
             obstacles[0] = obstaclex
         }
@@ -430,7 +436,7 @@ class GameLoop(
             x = fundo.backgroundMountains.width.toFloat() + x,
             y = 0f
         )
-        obstaclex.bitmap = obstaclex.pegarObj(context, 0)
+        obstaclex.bitmap = obstaclex.pegarObj(context, modo)
 
 //        while (!obstaclex.verirficarColisao(fundo)) {
 //            obstaclex.y += 150f
@@ -535,7 +541,9 @@ class GameLoop(
 
     @SuppressLint("SuspiciousIndentation")
     private fun drawGame(cam: Canvas?) {
-
+        if(carro.rodaT.gravity==0f && !venceuP.tirouFoto) {
+            venceuP.tirarFoto()
+        }
         canvas = cam
         val canvas2 = Canvas(tela)
 
@@ -715,8 +723,9 @@ class GameLoop(
 
 
 
-         venceuP = Venceu(this.context, (tw.toInt()), (th.toInt()), 0, Offset(w.toFloat(),h.toFloat()),carro)
 
+         carroRival = CarroRival(context, tw.toInt(), th.toInt())
+        carroRival1 = CarroRival(context, tw.toInt(), th.toInt())
 
         carro.w = tw.toInt()
         carro.h = th.toInt()
@@ -724,6 +733,9 @@ class GameLoop(
         carroRival.h = th.toInt()
         carroRival1.w = tw.toInt()
         carroRival1.h = th.toInt()
+
+
+
 
         carro.screenHeight = th.toInt()
         carro.iniciarRodas()
@@ -737,14 +749,61 @@ class GameLoop(
         carro.colisao = colisao
         carroRival.colisao = colisao2
         carroRival1.colisao = colisao3
-        var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.casasb, options)
-        var n = Bitmap.createScaledBitmap(
-            nx,
-            (tw).toInt(),
-            (th).toInt(),
-            false
-        )
 
+        when(modo) {
+            0-> {
+                var nx
+                        : Bitmap =
+                    BitmapFactory.decodeResource(context.resources, R.drawable.casasb, options)
+
+                var n = Bitmap.createScaledBitmap(
+                    nx,
+                    (tw).toInt(),
+                    (th).toInt(),
+                    false
+                )
+
+                var cx
+                        : Bitmap =
+                    BitmapFactory.decodeResource(context.resources, R.drawable.ceub, options)
+
+                var c = Bitmap.createScaledBitmap(
+                    cx,
+                    (tw).toInt(),
+                    (th).toInt(),
+                    false
+                )
+
+                ceu.backgroundClouds = n
+                ceu.backgroundSky = c
+            }
+            1-> {
+                var nx
+                        : Bitmap =
+                    BitmapFactory.decodeResource(context.resources, R.drawable.praiafundo, options)
+
+                var n = Bitmap.createScaledBitmap(
+                    nx,
+                    (tw).toInt(),
+                    (th).toInt(),
+                    false
+                )
+
+                var cx
+                        : Bitmap =
+                    BitmapFactory.decodeResource(context.resources, R.drawable.praiaceu, options)
+
+                var c = Bitmap.createScaledBitmap(
+                    cx,
+                    (tw).toInt(),
+                    (th).toInt(),
+                    false
+                )
+
+                ceu.backgroundClouds = n
+                ceu.backgroundSky = c
+            }
+        }
 
         tela = Bitmap.createScaledBitmap(
             tela,
@@ -753,13 +812,7 @@ class GameLoop(
             false
         )
 
-        var cx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ceub, options)
-        var c = Bitmap.createScaledBitmap(
-            cx,
-            (tw).toInt(),
-            (th).toInt(),
-            false
-        )
+
         var cxx: Bitmap =
             BitmapFactory.decodeResource(context.resources, R.drawable.bitmap, options)
         var cxs = Bitmap.createScaledBitmap(
@@ -768,16 +821,15 @@ class GameLoop(
             (h).toInt(),
             false
         )
-        trackRenderer.loadTrackSegments(((tw * 1.5f).toInt()), th.toInt())
-        ceu.backgroundClouds = n
-//        fundo.backgroundMountains = trackRenderer.trackSegments[0]
-//        fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+        trackRenderer.loadTrackSegments(((tw * 1.5f).toInt()), th.toInt(),modo)
 
 
-        fundo.backgroundMountains = cxs
-        fundo.backgroundMountains2 = cxs
+        fundo.backgroundMountains = trackRenderer.trackSegments[0]
+        fundo.backgroundMountains2 = trackRenderer.trackSegments[1]
+
+
         fundo.texturaBitmap = cxs
-        ceu.backgroundSky = c
+
         fundo.mountainsX = 0f
         fundo.mountainsX2 = fundo.mountainsX + (fundo.backgroundMountains.width).toFloat()//+ 1800
         carroRival.verificarPosiçãoPista(fundo)
@@ -786,10 +838,23 @@ class GameLoop(
 
 
         final.bitmap = final.pegarObjF(context, (tw/2).toInt(), (tw/3.5).toInt())
-        final.y=-final.bitmap.height.toFloat()
-        final.x = (w*22f).toFloat()
+     //   final.y=-final.bitmap.height.toFloat()
+       final.x = (w*22f).toFloat()
+     //   final.x = (w*1.5f).toFloat()
         final.caiu = false
+        final.y = -final.bitmap.height.toFloat()
         venceu=false
+
+
+        carro.rodaT.mover=true
+        carro.rodaF.mover=true
+        carroRival.rodaT.mover=true
+        carroRival.rodaF.mover=true
+        carroRival1.rodaT.mover=true
+        carroRival1.rodaF.mover=true
+
+        venceuP = Venceu(this.context, (tw.toInt()), (th.toInt()), 0, Offset(w.toFloat(),h.toFloat()),carro)
+
 
         addRandomObstacle(fundo, 0f)
     }
@@ -880,10 +945,21 @@ class GameLoop(
     }
 
     fun reset() {
-        carro = Carro(context, tw.toInt(), th.toInt())
         trackRenderer = TrackRenderer(context)
+        carro = Carro(context, tw.toInt(), th.toInt())
+
         carroRival = CarroRival(context, tw.toInt(), th.toInt())
         carroRival1 = CarroRival(context, tw.toInt(), th.toInt())
+
+
+        carro.rodaT.y = -100f
+        carro.rodaF.y= -100f
+
+        carroRival.rodaT.y = 0f
+        carroRival.rodaF.y= 0f
+
+        carroRival1.rodaT.y = 0f
+        carroRival1.rodaF.y= 0f
         fundo = Fundo(context)
         ceu = Ceu(context)
         obstacles.clear()
@@ -908,8 +984,7 @@ class GameLoop(
                         ) {
                             selecao.sair = false
                             gameState = GameState.SELECAO
-                            trackRenderer = TrackRenderer(context)
-                            reset()
+                             reset()
                             init()
 
 
@@ -1000,8 +1075,7 @@ class GameLoop(
 
                             selecao.sair = false
                             gameState = GameState.SELECAO
-                            trackRenderer = TrackRenderer(context)
-                            reset()
+                             reset()
                             init()
                         }
 
@@ -1116,14 +1190,14 @@ class GameLoop(
                         carroRival1.rodaT.bitmap = selecao.getRoda(0)
 
                         gameState = GameState.PLAYING
-                        venceuP.tirarFoto()
+
                     }
                 } else {
                     carro.bitmap = inserirIMG(selecao.listaMonters[selecao.index])
                     carro.rodaF.bitmap = selecao.getRoda()
                     carro.rodaT.bitmap = selecao.getRoda()
                     gameState = GameState.PLAYING
-                    venceuP.tirarFoto()
+
                 }
             }
 

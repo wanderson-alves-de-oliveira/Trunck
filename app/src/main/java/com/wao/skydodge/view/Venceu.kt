@@ -71,27 +71,36 @@ class Venceu(
     }
 
     fun tirarFoto() {
-        //    if(!tirouFoto){
+
+     //   if (!tirouFoto) {
+        try {
+            var pozx = (carro.centerX) - (carro.largura)
+            var pozY = (carro.centerY) - (carro.altura * 4)
+            canvas2.save()
+            canvas2.translate(pozx, pozY) // Desloca o ponto (0,0)
+            carro.draw(canvas2)
+            canvas2.restore()
+            carroX = copiarPixelsComAlpha(carroX)
+            tirouFoto = true
+        }catch (e:Exception){
+            e.stackTrace
+        }
 
 
-        var pozx = (carro.centerX) - (carro.largura)
-        var pozY = (carro.centerY) - (carro.altura * 4)
 
-
-        canvas2.save()
-
-        canvas2.translate(pozx, pozY) // Desloca o ponto (0,0)
-
-        carro.draw(canvas2)
-        canvas2.restore()
-        carroX = copiarPixelsComAlpha(carroX)
-//            tirouFoto = true
-//        }
+      //  }
     }
 
     fun copiarPixelsComAlpha(bitmap: Bitmap): Bitmap {
+
+
         val width = bitmap.width
         val height = bitmap.height
+        if (width == 0 || height == 0) {
+            return bitmap
+        }
+
+
         val paint = Paint()
         var xM = Int.MIN_VALUE
         var xm = Int.MAX_VALUE

@@ -17,6 +17,7 @@ class Roda(context: Context,
     var y =  0f
 
      var giro = 0f
+    var mover = false
     private var speed = 20f
     var velocidadedoGiro = 0f
     var velocityY = 0f  // Velocidade vertical (gravidade)
@@ -62,10 +63,13 @@ class Roda(context: Context,
     fun update(deltaTime: Float) {
         // Aplica a gravidade: aumenta a velocidade vertical
 
-        velocityY += gravity
+
 
         // Atualiza a posição vertical com base na velocidade
-        y += velocityY
+       if(mover) {
+           velocityY += gravity
+           y += velocityY
+       }
 
         if(reduzindo){
             velocidadedoGiro-=  0.5f

@@ -97,6 +97,8 @@ class Selecao(val context: Context, val w: Int, val h: Int) {
         carregarlita()
         carro.bitmap = listaMonters[index]
 
+        carro.rodaT.mover=true
+        carro.rodaF.mover=true
         var nx: Bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.nuven,options)
         var n = Bitmap.createScaledBitmap(
             nx,

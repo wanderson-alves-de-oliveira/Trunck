@@ -19,13 +19,17 @@ class TrackRenderer(private val context: Context) {
 //        loadTrackSegments()
 //    }
 
-     fun loadTrackSegments(w: Int, h: Int) {
+     fun loadTrackSegments(w: Int, h: Int,modo:Int) {
          segmentCount = 12
          segmentWidth=w
          segmentHeight=h
-
+         var pista = "bitmapb"
+when(modo){
+    0->pista="bitmapb"
+    1->pista="praiaa"
+}
          for (i in 1..segmentCount) {
-             val resId = context.resources.getIdentifier("bitmapb$i", "drawable", context.packageName)
+             val resId = context.resources.getIdentifier("$pista$i", "drawable", context.packageName)
              val bmp = BitmapFactory.decodeResource(context.resources, resId)
              trackSegments.add(Bitmap.createScaledBitmap(bmp, segmentWidth, segmentHeight, false))
          }
